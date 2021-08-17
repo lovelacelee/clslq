@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<catalog>
+    <nodevalue>4</nodevalue>
+    <login username="pytest" password='123456'>
+        <caption>Python</caption>
+        <item attr="attr">
+            <caption>CLSLQ</caption>
+        </item>
+    </login>
+</catalog>

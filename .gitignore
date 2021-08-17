@@ -1,0 +1,8 @@
+.pytest_cache
+__pycache__
+logs
+*.log
+clslq.egg-info
+dist
+.eggs
+test-report.html

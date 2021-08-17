@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
 
-import os
+import sys
 import logging
 from logging import critical, handlers, info
 from .clslq_singleton import SingletonClass
@@ -56,7 +56,25 @@ class ClslqLogger(SingletonClass):
 
     @property
     def log(self):
-        return ClslqLogger._root_logger
+        try:
+            '''pip install logru'''
+            from loguru import logger
+            logger.add(
+                "logs/app.log",
+                rotation="2 days",
+                retention="14",
+                format='[{time:YYYY-MM-DD HH:mm:ss} |{level:8.8s}| {file}:{line}]{message}',
+                encoding='utf-8', enqueue=True
+            )
+  
+            logger.add(
+                sys.stderr,
+                format='[<green>{time:YYYY-MM-DD HH:mm:ss}</green> |{level:8.8s}| {file}:<green>{line}</green>]{message}',
+                encoding='utf-8', enqueue=True, colorize=True
+            )
+            return logger
+        except:
+            return ClslqLogger._root_logger
 
     @property
     def file(self):

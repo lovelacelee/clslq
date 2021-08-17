@@ -17,9 +17,9 @@ class TestCases():
     def test_log(self):
         clslog.info("info")
         clslog.debug("debug")
-        clslog.warn("warning")
+        clslog.warning("warning")
         clslog.error("error")
-        clslog.fatal("critical")
+        clslog.critical("critical")
 
     '''
     Test cases for clslq config parser

@@ -6,3 +6,4 @@ clslq.egg-info
 dist
 .eggs
 test-report.html
+build

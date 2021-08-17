@@ -5,10 +5,30 @@ import shutil
 import os
 
 version='1.1.1'
-
+def match(list, s):
+    for i in list:
+        if i == s:
+            return True
+    return False
+    
 def rmdir(path):
-    if os.path.exists(path):
-        shutil.rmtree(path)
+    removelist = [
+        'build','.pytest_cache','__pycache__','clslq.egg-info','logs','.eggs', 'dist'
+    ]
+    for root,dirs,files in os.walk(path):
+        for d in dirs:
+            t = os.path.join(root, d)
+            father = os.path.basename(root)
+            if father =='.git':
+                continue
+            if os.path.exists(t) and match(removelist, d):
+                print("delete {}".format(t))
+                shutil.rmtree(t)
+        for f in files:
+            t = os.path.join(root, f)
+            if os.path.exists(path) and match(removelist, f):
+                print("delete {}".format(t))
+                os.remove(t)
 
 class CleanCommand(Command):
     description = "Clean"
@@ -22,11 +42,7 @@ class CleanCommand(Command):
         pass
     def run(self):
         workdir=os.path.dirname(os.path.abspath(__file__))
-        rmdir(os.path.join(workdir, 'build'))
-        rmdir(os.path.join(workdir, '.pytest_cache'))
-        rmdir(os.path.join(workdir, '__pycache__'))
-        rmdir(os.path.join(workdir, 'clslq.egg-info'))
-        rmdir(os.path.join(workdir, 'logs'))
+        rmdir(workdir)
 
 class PublishCommand(Command):
 
@@ -64,6 +80,10 @@ class PublishCommand(Command):
             os.system("twine upload dist/*")
         else:
             os.system("twine upload --repository-url http://gw.lovelacelee.com:8002/ dist/*")
+            
+        os.system("git status")
+        os.system("git commit -a -m 'update'")
+        os.system("git push")
 
 setup(
     name="clslq",

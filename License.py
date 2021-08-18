@@ -1,4 +1,7 @@
 # -*- encoding:utf-8 -*-
+import textwrap
+
+__license__=\
 '''
 MIT License
 
@@ -22,26 +25,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
-from .clslq_singleton import clslq_singleton
-from .clslq_singleton import SingletonClass
-from .clslq_singleton import SingletonMetaclass
 
-from .clslq_config import ClslqConfig
-from .clslq_config import ClslqConfigUnique
-
-from .clslq_log import ClslqLogger
-
-from .clslq_utils import mkdir_p
-
-__all__ = [
-    'SingletonClass', 'SingletonMetaclass', 'clslq_singleton'
-    'ClslqConfig', 'ClslqConfigUnique',
-    'ClslqLogger',
-    'mkdir_p'
-]
-
-"""Logger wapper"""
-__clslq_log = ClslqLogger()
-clslog = __clslq_log.log
-
-__version__ = "1.1.2"
+if __name__ == "__main__":
+    print(__license__)

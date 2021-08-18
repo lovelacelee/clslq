@@ -22,26 +22,44 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
-from .clslq_singleton import clslq_singleton
-from .clslq_singleton import SingletonClass
-from .clslq_singleton import SingletonMetaclass
+import click
+import platform
+import os
 
-from .clslq_config import ClslqConfig
-from .clslq_config import ClslqConfigUnique
+from clslq.clslq_utils import pipguess
 
-from .clslq_log import ClslqLogger
-
-from .clslq_utils import mkdir_p
-
-__all__ = [
-    'SingletonClass', 'SingletonMetaclass', 'clslq_singleton'
-    'ClslqConfig', 'ClslqConfigUnique',
-    'ClslqLogger',
-    'mkdir_p'
-]
-
-"""Logger wapper"""
-__clslq_log = ClslqLogger()
-clslog = __clslq_log.log
-
-__version__ = "1.1.2"
+@click.option(
+    '--pypi',
+    '-i',
+    default='http://gw.lovelacelee.com:8002',
+    help='The pypi mirror url, default use: http://gw.lovelacelee.com:8002'
+)
+@click.option(
+    '--trusted-host',
+    '-t',
+    default='gw.lovelacelee.com',
+    help='The trusted mirror host, default: gw.lovelacelee.com.'
+)
+@click.command(
+    context_settings=dict(
+        allow_extra_args=True,
+        ignore_unknown_options=True,
+    ),
+    help="The wrapper for pip, use local pypi as default."
+)
+@click.pass_context
+def pip(ctx, pypi, trusted_host):
+    #click.echo(ctx.args)
+    _cmdline = pipguess()
+    _change_pypi_cmds = [ 'install', 'download', 'list', 'search']
+    _change_pypi = False
+    for i in ctx.args:
+        _cmdline += ' ' + i + ' '
+        if i in _change_pypi_cmds:
+            _change_pypi = True
+    if _change_pypi:
+        _cmdline += ' -i '+pypi
+        _cmdline += ' --trusted-host '+trusted_host
+    click.echo(_cmdline)
+    click.echo('=W=H=A=T=R=E=T=U=R=N=E=D=B=Y=P=I=P=')
+    os.system(_cmdline)

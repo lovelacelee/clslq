@@ -22,26 +22,28 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
-from .clslq_singleton import clslq_singleton
-from .clslq_singleton import SingletonClass
-from .clslq_singleton import SingletonMetaclass
 
-from .clslq_config import ClslqConfig
-from .clslq_config import ClslqConfigUnique
+import click
+from click.termui import prompt
+from clscmd.clslq_pip import pip
+from clscmd.clslq_venv import venv
+#from clscmd.clslq_callback import test_callback
 
-from .clslq_log import ClslqLogger
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
-from .clslq_utils import mkdir_p
+@click.group(name="main", context_settings=CONTEXT_SETTINGS)
+@click.version_option(package_name='clslq', prog_name='clslq', message='%(prog)s-%(version)s')
+def main():
+    """
+    CLSLQ include some quick-start python programming functions, wrappers and tools.
+    For more information, please contact [admin@lovelacelee.com].
+    @click: https://click-docs-zh-cn.readthedocs.io/zh/latest/
+    """
+    pass
 
-__all__ = [
-    'SingletonClass', 'SingletonMetaclass', 'clslq_singleton'
-    'ClslqConfig', 'ClslqConfigUnique',
-    'ClslqLogger',
-    'mkdir_p'
-]
+main.add_command(pip, name='pip')
+main.add_command(venv, name='venv')
+#main.add_command(test_callback, name='test')
 
-"""Logger wapper"""
-__clslq_log = ClslqLogger()
-clslog = __clslq_log.log
-
-__version__ = "1.1.2"
+if __name__ == '__main__':
+    main()

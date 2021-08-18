@@ -1,14 +1,14 @@
 # clslq
 
+Connard's python library.
+
+CLSLQ is a python common use function library from Connard Lee since 2021.
+
 
 # Release
 
 * -202108- Started with config paser support[json/xml/ini/yaml support]
 * -202108- Fixed a common use logger via pure python library
-
-Connard's python library.
-
-CLSLQ is a python common use function library from Connard Lee since 2021.
 
 # Test cases
 

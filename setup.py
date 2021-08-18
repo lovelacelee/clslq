@@ -5,6 +5,7 @@ import shutil
 import os
 
 version='1.1.1'
+
 def match(list, s):
     for i in list:
         if i == s:
@@ -89,18 +90,23 @@ setup(
     name="clslq",
     version=version,
     author="Connard.Lee",
-    author_email="lovelacelee@live.cn",
+    author_email="admin@lovelacelee.com",
     description="Connard's python library.",
     # Project home
     url="http://lovelacelee.com",
-    install_requires=['docutils>=0.3'],
+    install_requires=[
+        'loguru',
+        'Click',
+        'pipenv'
+    ],
     platforms=["all"],
     keywords = [
-        'clslq'
+        'clslq',
+        'clslqutils'
     ],
     # setup.py needs
     setup_requires=[
-        'pbr',
+        'setuptools',
         'twine'
     ],
     requires=[
@@ -110,16 +116,17 @@ setup(
     tests_require=[
         'pytest>=3.3.1',
         'pytest-cov>=2.5.1',
+        'pytest-html'
     ],
     python_requires='>=3',
     # setup_requires or tests_require packages
     # will be written into metadata of *.egg
     dependency_links=[
-        #"http://example2.com/p/foobar-1.0.tar.gz",
+        #"http://gw.lovelacelee.com:8002/clslq-1.1.0.tar.gz",
     ],
 
     # setuptools.find_packages
-    packages=find_packages(),
+    packages=find_packages(exclude=["pytest"]),
     classifiers = [
         #   3 - Alpha
         #   4 - Beta
@@ -155,15 +162,19 @@ setup(
     # Will be packed
     package_data={
         '':['*.txt'],
-        'bandwidth_reporter':['*.txt']
+        'markdown':['*.md']
     },
     # Will not be packed
     exclude_package_data={
-        'bandwidth_reporter':['*.txt']
+        'useless':['*.in']
     },
-    
+    entry_points={
+        'console_scripts': [
+            "clslq = clscmd.cmd:main"
+        ]
+    },
     cmdclass={
-        "clean": CleanCommand,
+        "distclean": CleanCommand,
         "publish": PublishCommand
     }
 )

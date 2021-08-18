@@ -29,10 +29,15 @@ import platform
 import re
 import shutil
 
-def mkdir_p(file):
-    path = file
-    if file.find('/') or file.find('\\') > 0:
-        path = os.path.dirname(file)
+def mkdir_p(absolute_path):
+    """
+    mkdir -p implement
+    Usage: mkdir_p('D:\\A\\B\\C.txt')
+           mkdir_p('~/A/B/C')
+    """
+    path = absolute_path
+    if os.path.isfile(absolute_path):
+        path = os.path.dirname(absolute_path)
     if not os.path.exists(path):
         os.makedirs(path, 0o777)
 
@@ -47,6 +52,26 @@ def dir_copy(srcpath, dstpath):
                 shutil.copytree(srcpath, dstpath)
     except Exception as e:
         pass
+    
+def rmdir(path):
+    """
+    Warning: all files and directories in path will be deleted.
+    """
+    if os.path.isfile(path):
+        print("{} will be deleted.".format(path))
+        os.remove(path)
+        return
+    for root,dirs,files in os.walk(path):
+        for d in dirs:
+            t = os.path.join(root, d)
+            if os.path.exists(t):
+                print("{} will be deleted.".format(t))
+                shutil.rmtree(t)
+        for f in files:
+            t = os.path.join(root, f)
+            if os.path.exists(path):
+                print("{} will be deleted.".format(t))
+                os.remove(t)
 
 def win_runtime_cp(src, to):
     # useful while running a package by pyinstaller on windows
@@ -59,3 +84,39 @@ def win_runtime_cp(src, to):
 def is_frozen():
     # All of the modules are built-in to the interpreter, e.g., by py2exe
     return hasattr(sys, "frozen")
+
+def pipguess():
+    if platform.system() == "Windows":
+        return "python -m pip "
+    else:
+        return "python3 -m pip "
+
+def pipenv_setenv(permanent=True, home='venv',
+    pypisrc='https://pypi.tuna.tsinghua.edu.cn/simple'):
+    if permanent:
+        """
+        HERE is the way for permanently set 
+        # with /m means system env
+        # without /m means user env
+        """
+        os.system(r"setx PIPENV_TEST_INDEX %s /m"%pypisrc)
+        os.system(r"setx WORKON_HOME venv /m")
+    else:
+        os.environ['PIPENV_TEST_INDEX']=pypisrc
+        os.environ['WORKON_HOME']=home
+
+def pip_conf_install(src=None):
+    try:
+        if not src or not os.path.exists(src):
+            src = os.path.join(os.path.dirname(__file__), 'pip.conf')
+        systype = platform.system()
+        if(systype == "Windows"):
+            pipdotdir = os.path.join(os.getenv('APPDATA'), "pip")
+            pip_dest = os.path.join(pipdotdir, "pip.ini")
+        else:
+            pipdotdir = os.path.join(os.getenv('HOME'), ".pip")
+            pip_dest = os.path.join(pipdotdir, "pip.conf")
+        mkdir_p(pipdotdir)
+        shutil.copyfile(src, pip_dest)
+    except:
+        pass

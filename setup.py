@@ -185,7 +185,6 @@ setup(
     # Will be packed
     package_data={
         'clslq':['*.conf', '*.txt', '*.md'],
-        'clscmd':['*.conf', '*.txt', '*.md']
     },
     # Will not be packed
     exclude_package_data={
@@ -193,7 +192,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            "clslq = clscmd.cmd:main"
+            "clslq = clslq:main"
         ]
     },
     cmdclass={

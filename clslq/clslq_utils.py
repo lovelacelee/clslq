@@ -89,19 +89,16 @@ def pipguess():
     else:
         return "python3 -m pip "
 
-def pipenv_setenv(permanent=True, home='venv',
-    pypisrc='https://pypi.tuna.tsinghua.edu.cn/simple'):
+def setenv(permanent=True, key=None, value=None):
     if permanent:
         """
         HERE is the way for permanently set 
         # with /m means system env
         # without /m means user env
         """
-        os.system(r"setx PIPENV_TEST_INDEX %s /m"%pypisrc)
-        os.system(r"setx WORKON_HOME venv /m")
+        os.system(r"setx %s %s /m"%(key, value))
     else:
-        os.environ['PIPENV_TEST_INDEX']=pypisrc
-        os.environ['WORKON_HOME']=home
+        os.environ['%s'%key]=value
 
 def pip_conf_install(src=None):
     try:

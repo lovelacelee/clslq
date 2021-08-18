@@ -26,7 +26,7 @@ import click
 import platform
 import os
 
-from clslq.clslq_utils import pipguess
+from .clslq_utils import pipguess
 
 @click.option(
     '--pypi',
@@ -50,6 +50,8 @@ from clslq.clslq_utils import pipguess
 @click.pass_context
 def pip(ctx, pypi, trusted_host):
     #click.echo(ctx.args)
+    # upgrade pip first
+    os.system(pipguess()+'install --upgrade pip')
     _cmdline = pipguess()
     _change_pypi_cmds = [ 'install', 'download', 'list', 'search']
     _change_pypi = False

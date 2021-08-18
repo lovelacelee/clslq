@@ -25,8 +25,8 @@ SOFTWARE.
 
 import click
 from click.termui import prompt
-from clscmd.clslq_pip import pip
-from clscmd.clslq_venv import venv
+from clslq.clslq_pip import pip
+from clslq.clslq_venv import venv
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 

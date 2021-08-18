@@ -25,24 +25,24 @@ SOFTWARE.
 import click
 import platform
 import os
-from clslq.clslq_utils import pip_conf_install
-from clslq.clslq_utils import pipguess
-from clslq.clslq_utils import pipenv_setenv
-from clslq.clslq_utils import rmdir
+from .clslq_utils import pip_conf_install
+from .clslq_utils import pipguess
+from .clslq_utils import setenv
+from .clslq_utils import rmdir
+import pipenv
 
 @click.option(
     '--create',
     '-c',
-    default='venv',
-    type="<url>",
-    help='Create python virtual environment, default ./venv will be created.'
+    flag_value="venv",
+    help='Create python virtual environment, venv will be created.'
 )
 
 @click.option(
     '--delete',
     '-d',
-    default='venv',
-    help='Delete python virtual environment, default ./venv will be created.'
+    flag_value="delete",
+    help='Delete python virtual environment, venv will be created.'
 )
 
 @click.option(
@@ -68,24 +68,25 @@ from clslq.clslq_utils import rmdir
     ),
     help="Python venv manager of CLSLQ implement."
 )
-@click.pass_context
-def venv(ctx, create, init, pipconf):
-    click.secho(create, fg="blue")
-    click.secho(init, fg="blue")
-    click.secho(pipconf, fg="blue")
+
+def venv(create, delete, init, pipconf):
+    setenv(key='PIPENV_TEST_INDEX', value='https://pypi.tuna.tsinghua.edu.cn/simple')
+    setenv(key='WORKON_HOME', value='venv')
     if pipconf:
         pip_conf_install(pipconf)
     if create:
-        click.secho("Create new {} environment.".format(create), fg='green')
-        pipenv_setenv(home=create)
+        click.secho("Create new environment:{}.".format(create), fg='green')
         os.system("pipenv install --three --skip-lock")
-        exit
-    else:
-        click.echo("Delete {}".format(os.path.join(os.path.dirname(__file__), 'venv')))
-        #rmdir(os.path.join(os.path.dirname(__file__), 'venv'))
+        exit()
+    if delete:
+        click.echo("Delete {}".format(os.path.join(os.getcwd(), 'venv')))
         os.system('pipenv --rm')
-        exit
+        exit()
     if init:
-        click.echo("init:{}".format(init))
-        
+        requires = os.path.join(os.getcwd(), 'requirements.txt')
+        if os.path.exists(requires):
+            os.system(pipguess()+'install -r %s'%requires)
+        else:
+            click.secho("{} is not exist.".format(requires))
+
     os.system("pipenv shell")

@@ -31,13 +31,21 @@ from clslq.clslq_utils import pipenv_setenv
 from clslq.clslq_utils import rmdir
 
 @click.option(
-    '--create/--delete',
-    '-c/-d',
-    help='Create python virtual environment, ./venv will be created.'
+    '--create',
+    '-c',
+    default=False,
+    help='Create python virtual environment, default ./venv will be created.'
+)
+@click.option(
+    '--delete',
+    '-d',
+    default=False,
+    help='Delete python virtual environment, defalt ./venv will be deleted.'
 )
 @click.option(
     '--init',
     '-i',
+    default=False,
     help='Init dev enviroment when requirements.txt or Pipfile exists.'
 )
 @click.option(
@@ -49,6 +57,7 @@ from clslq.clslq_utils import rmdir
 @click.option(
     '--pipconf',
     '-p',
+    type=click.Path(exists=True),
     default=os.path.join(os.path.dirname(__file__), 'pip.conf'),
     help='Install pip.conf to local system, default use {}.'.format(
         os.path.join(os.path.dirname(__file__), 'pip.conf'))
@@ -61,19 +70,21 @@ from clslq.clslq_utils import rmdir
     help="Python venv manager of CLSLQ implement."
 )
 @click.pass_context
-def venv(ctx, create, init, pipconf, shell):
-    if create:
-        click.echo("create")
-        pipenv_setenv()
-        os.system("pipenv install --three --skip-lock")
-    else:
-        click.echo("delete {}".format(os.path.join(os.path.dirname(__file__), 'venv')))
-        #rmdir(os.path.join(os.path.dirname(__file__), 'venv'))
-
+def venv(ctx, create, delete, init, pipconf, shell):
+    pipenv_setenv()
     if pipconf:
         click.echo("pipconf:{}".format(pipconf))
         pip_conf_install(pipconf)
+    if create:
+        click.echo("create")
+        os.system("pipenv --three")
+    if delete:
+        click.echo("delete {}".format(os.path.join(os.path.dirname(__file__), 'venv')))
+        #rmdir(os.path.join(os.path.dirname(__file__), 'venv'))
+        os.system('pipenv --rm')
+        exit
     if init:
         click.echo("init:{}".format(init))
+        os.system("pipenv install --three --skip-lock")
     if shell:
         os.system("pipenv --three shell")

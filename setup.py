@@ -87,12 +87,16 @@ class PublishCommand(Command):
         os.system("git commit -a -m 'update'")
         os.system("git push")
 
+with open('ChangeLog', mode='r', encoding='utf-8') as f:
+   history = f.read()
+
 setup(
     name="clslq",
     version=version,
     author="Connard.Lee",
     author_email="admin@lovelacelee.com",
     description="Connard's python library.",
+    long_description = history,
     # Project home
     url="http://git.lovelacelee.com",
     install_requires=[
@@ -100,6 +104,7 @@ setup(
         'Click',
         'pipenv'
     ],
+
     platforms=["all"],
     keywords = [
         'clslq',
@@ -127,8 +132,6 @@ setup(
         #"http://gw.lovelacelee.com:8002/clslq-1.1.0.tar.gz",
     ],
 
-    # setuptools.find_packages
-    packages=find_packages(exclude=["pytest"]),
     classifiers = [
         #   3 - Alpha
         #   4 - Beta
@@ -156,15 +159,20 @@ setup(
         'Programming Language :: Python :: 3.9',
     ],
 
+    # setuptools.find_packages
+    packages=find_packages(exclude=["pytest"]),
+    package_dir = {'clslq': 'clslq'},
     # Static files: config/service/pictures
     data_files=[
         #('', ['conf/*.conf']),
         #('/usr/lib/systemd/system/', ['bin/*.service']),
+        ('', ['clscmd/pip.conf']),
+        ('clslq', ['Pipfile']),
     ],
     # Will be packed
     package_data={
-        '':['*.txt'],
-        'markdown':['*.md']
+        'clslq':['*.txt'],
+        'clscmd':['*.conf']
     },
     # Will not be packed
     exclude_package_data={

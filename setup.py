@@ -17,7 +17,6 @@ def rmdir(path):
         '.pytest_cache',
         '__pycache__',
         'clslq.egg-info',
-        'logs',
         '.eggs', 
         'dist'
     ]
@@ -30,9 +29,10 @@ def rmdir(path):
             if os.path.exists(t) and match(removelist, d):
                 try:
                     print("delete {}".format(t))
-                    shutil.rmtree(t)
-                except:
-                    pass
+                    shutil.rmtree(t, ignore_errors=True)
+                except Exception as e:
+                    print(e)
+
         for f in files:
             t = os.path.join(root, f)
             if os.path.exists(path) and match(removelist, f):

@@ -164,15 +164,16 @@ setup(
     package_dir = {'clslq': 'clslq'},
     # Static files: config/service/pictures
     data_files=[
-        #('', ['conf/*.conf']),
+        # root directory such as: c:\python39\
+        #('', ['conf/*.conf']), 
         #('/usr/lib/systemd/system/', ['bin/*.service']),
-        ('clslq_test', ['clscmd/pip.conf']),
-        ('clslq_test', ['Pipfile']),
+        #('', ['clscmd/pip.conf']),
+        #('clslq', ['Pipfile']),
     ],
     # Will be packed
     package_data={
-        'clslq':['*.txt'],
-        'clscmd':['*.conf']
+        'clslq':['*.conf', '*.txt', '*.md'],
+        'clscmd':['*.conf', '*.txt', '*.md']
     },
     # Will not be packed
     exclude_package_data={

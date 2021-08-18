@@ -51,9 +51,10 @@ class PublishCommand(Command):
 
     user_options = [
         # The format is (long option, short option, description).
-        ("test", None, "Publish to test.pypi.org"),
-        ("release", None, "Publish to pypi.org"),
-        ("local", None, "Publish to gw.lovelacelee.com:8002 [default]"),
+        # python setup.py --help
+        ("test", 't', "Publish to test.pypi.org"),
+        ("release", 'r', "Publish to pypi.org"),
+        ("local", 'l', "Publish to gw.lovelacelee.com:8002 [default]"),
     ]
 
     def initialize_options(self):
@@ -93,7 +94,7 @@ setup(
     author_email="admin@lovelacelee.com",
     description="Connard's python library.",
     # Project home
-    url="http://lovelacelee.com",
+    url="http://git.lovelacelee.com",
     install_requires=[
         'loguru',
         'Click',

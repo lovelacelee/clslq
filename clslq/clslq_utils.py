@@ -35,9 +35,7 @@ def mkdir_p(absolute_path):
     Usage: mkdir_p('D:\\A\\B\\C.txt')
            mkdir_p('~/A/B/C')
     """
-    path = absolute_path
-    if os.path.isfile(absolute_path):
-        path = os.path.dirname(absolute_path)
+    path = os.path.dirname(absolute_path)
     if not os.path.exists(path):
         os.makedirs(path, 0o777)
 

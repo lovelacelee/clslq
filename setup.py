@@ -166,8 +166,8 @@ setup(
     data_files=[
         #('', ['conf/*.conf']),
         #('/usr/lib/systemd/system/', ['bin/*.service']),
-        ('', ['clscmd/pip.conf']),
-        ('clslq', ['Pipfile']),
+        ('clslq_test', ['clscmd/pip.conf']),
+        ('clslq_test', ['Pipfile']),
     ],
     # Will be packed
     package_data={

@@ -7,14 +7,19 @@ import version
 version=version.__version__
 
 def match(list, s):
-    for i in list:
-        if i == s:
-            return True
+    if s in list:
+        return True
     return False
     
 def rmdir(path):
     removelist = [
-        'build','.pytest_cache','__pycache__','clslq.egg-info','logs','.eggs', 'dist'
+        'build',
+        '.pytest_cache',
+        '__pycache__',
+        'clslq.egg-info',
+        'logs',
+        '.eggs', 
+        'dist'
     ]
     for root,dirs,files in os.walk(path):
         for d in dirs:
@@ -23,16 +28,22 @@ def rmdir(path):
             if father =='.git':
                 continue
             if os.path.exists(t) and match(removelist, d):
-                print("delete {}".format(t))
-                shutil.rmtree(t)
+                try:
+                    print("delete {}".format(t))
+                    shutil.rmtree(t)
+                except:
+                    pass
         for f in files:
             t = os.path.join(root, f)
             if os.path.exists(path) and match(removelist, f):
-                print("delete {}".format(t))
-                os.remove(t)
+                try:
+                    print("delete {}".format(t))
+                    os.remove(t)
+                except:
+                    pass
 
 class CleanCommand(Command):
-    description = "Clean"
+    description = "distclean"
     user_options = []
     # This method must be implemented
     def initialize_options(self):
@@ -43,6 +54,7 @@ class CleanCommand(Command):
         pass
     def run(self):
         workdir=os.path.dirname(os.path.abspath(__file__))
+        print("distclean work root:{}".format(workdir))
         rmdir(workdir)
 
 class PublishCommand(Command):

@@ -27,7 +27,6 @@ import click
 from click.termui import prompt
 from clscmd.clslq_pip import pip
 from clscmd.clslq_venv import venv
-#from clscmd.clslq_callback import test_callback
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
@@ -43,7 +42,6 @@ def main():
 
 main.add_command(pip, name='pip')
 main.add_command(venv, name='venv')
-#main.add_command(test_callback, name='test')
 
 if __name__ == '__main__':
     main()

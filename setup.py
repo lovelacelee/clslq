@@ -3,8 +3,8 @@ from setuptools import find_packages
 from setuptools import Command
 import shutil
 import os
-
-version='1.1.1'
+import version
+version=version.__version__
 
 def match(list, s):
     for i in list:
@@ -107,6 +107,7 @@ setup(
     # setup.py needs
     setup_requires=[
         'setuptools',
+        'Click',
         'twine'
     ],
     requires=[

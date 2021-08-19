@@ -46,4 +46,4 @@ __all__ = [
 __clslq_log = ClslqLogger()
 clslog = __clslq_log.log
 
-__version__ = "1.1.5"
+__version__ = "1.1.6"

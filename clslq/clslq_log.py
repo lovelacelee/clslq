@@ -30,13 +30,14 @@ from .clslq_singleton import SingletonClass
 from .clslq_utils import mkdir_p
 
 class ClslqLogger(SingletonClass):
-    _logfile = "logs/app.log"
+    _logfile = None
+    _filehdr = None
     _loglevel = logging.DEBUG
     _root_logger = logging.RootLogger(logging.DEBUG)
     _fmtstring = '[%(levelname)-8.8s %(asctime)s %(filename)s:%(lineno)d] %(message)s'
-    def __init__(self) -> None:
+    def __init__(self, file=None) -> None:
         super().__init__()
-        mkdir_p(self._logfile)
+        self._logfile = file
         self._root_logger.handlers.clear()
         '''Console'''
         console = logging.StreamHandler()
@@ -49,24 +50,27 @@ class ClslqLogger(SingletonClass):
         backupCount: delete log file more then backupCount files
         when: S-Seconds M-Miniutes H-Hours D-Days W-Weeks(==0 means monday) midnight(00:00)
         """
-        file_hdle = handlers.TimedRotatingFileHandler(self._logfile, backupCount=3, when='D', encoding='utf-8')
-        file_hdle.setFormatter(logging.Formatter(self._fmtstring))
-        file_hdle.setLevel(self._loglevel)
-        self._root_logger.addHandler(file_hdle)
+        if self._logfile:
+            mkdir_p(self._logfile)
+            self._filehdr = handlers.TimedRotatingFileHandler(self._logfile, 
+                backupCount=3, when='D', encoding='utf-8')
+            self._filehdr.setFormatter(logging.Formatter(self._fmtstring))
+            self._filehdr.setLevel(self._loglevel)
+            self._root_logger.addHandler(self._filehdr)
 
     @property
-    def log(self):
+    def log(self, filename=None):
         try:
             '''pip install logru'''
             from loguru import logger
-            logger.add(
-                "logs/app.log",
-                rotation="2 days",
-                retention="14",
-                format='[{time:YYYY-MM-DD HH:mm:ss} |{level:8.8s}| {file}:{line}]{message}',
-                encoding='utf-8', enqueue=True
-            )
-  
+            if filename:
+                logger.add(
+                    "logs/app.log",
+                    rotation="2 days",
+                    retention="14",
+                    format='[{time:YYYY-MM-DD HH:mm:ss} |{level:8.8s}| {file}:{line}]{message}',
+                    encoding='utf-8', enqueue=True
+                )
             logger.add(
                 sys.stderr,
                 format='[<green>{time:YYYY-MM-DD HH:mm:ss}</green> |{level:8.8s}| {file}:<green>{line}</green>]{message}',

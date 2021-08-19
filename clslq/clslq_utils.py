@@ -28,6 +28,8 @@ import sys
 import platform
 import re
 import shutil
+import click
+from .clslq_md5 import ClslqMd5
 
 def mkdir_p(absolute_path):
     """
@@ -105,6 +107,7 @@ def pip_conf_install(src=None):
         if not src or not os.path.exists(src):
             src = os.path.join(os.path.dirname(__file__), 'pip.conf')
         systype = platform.system()
+        md5 = ClslqMd5()
         if(systype == "Windows"):
             pipdotdir = os.path.join(os.getenv('APPDATA'), "pip")
             pip_dest = os.path.join(pipdotdir, "pip.ini")
@@ -112,6 +115,9 @@ def pip_conf_install(src=None):
             pipdotdir = os.path.join(os.getenv('HOME'), ".pip")
             pip_dest = os.path.join(pipdotdir, "pip.conf")
         mkdir_p(pipdotdir)
+        if os.path.exists(pip_dest) and md5.same(src, pip_dest):
+            click.secho("{} exist already".format(pip_dest))
+            return
         shutil.copyfile(src, pip_dest)
     except:
         pass

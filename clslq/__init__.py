@@ -30,6 +30,7 @@ from .clslq_config import ClslqConfig
 from .clslq_config import ClslqConfigUnique
 
 from .clslq_log import ClslqLogger
+from .clslq_md5 import ClslqMd5
 
 from .clslq_utils import mkdir_p
 
@@ -37,11 +38,12 @@ __all__ = [
     'SingletonClass', 'SingletonMetaclass', 'clslq_singleton'
     'ClslqConfig', 'ClslqConfigUnique',
     'ClslqLogger',
-    'mkdir_p'
+    'mkdir_p',
+    'ClslqMd5'
 ]
 
 """Logger wapper"""
 __clslq_log = ClslqLogger()
 clslog = __clslq_log.log
 
-__version__ = "1.1.4"
+__version__ = "1.1.5"

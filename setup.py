@@ -179,7 +179,7 @@ setup(
         # root directory such as: c:\python39\
         #('', ['conf/*.conf']), 
         #('/usr/lib/systemd/system/', ['bin/*.service']),
-        #('', ['clscmd/pip.conf']),
+        #('', ['clslq/pip.conf']),
         #('clslq', ['Pipfile']),
     ],
     # Will be packed
@@ -192,7 +192,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            "clslq = clslq.clslq:main"
+            "clslq = clslq.cli:main"
         ]
     },
     cmdclass={

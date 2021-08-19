@@ -1,4 +1,3 @@
 include *.txt AUTHORS ChangeLog *.conf 
-recursive-include clslq *.txt *.py
-recursive-include clscmd *.txt *.py
+recursive-include clslq *.txt *.py *.conf
 prune pytest

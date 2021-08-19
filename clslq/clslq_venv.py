@@ -28,8 +28,6 @@ import os
 from .clslq_utils import pip_conf_install
 from .clslq_utils import pipguess
 from .clslq_utils import setenv
-from .clslq_utils import rmdir
-import pipenv
 
 @click.option(
     '--create',
@@ -79,7 +77,7 @@ def venv(create, delete, init, pipconf):
         os.system("pipenv install --three --skip-lock")
         exit()
     if delete:
-        click.echo("Delete {}".format(os.path.join(os.getcwd(), 'venv')))
+        click.secho("Delete {}".format(os.path.join(os.getcwd(), 'venv')), fg='green')
         os.system('pipenv --rm')
         exit()
     if init:
@@ -87,6 +85,6 @@ def venv(create, delete, init, pipconf):
         if os.path.exists(requires):
             os.system(pipguess()+'install -r %s'%requires)
         else:
-            click.secho("{} is not exist.".format(requires))
+            click.secho("{} is not exist.".format(requires), fg='red')
 
     os.system("pipenv shell")

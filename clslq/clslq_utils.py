@@ -94,11 +94,16 @@ def pipguess():
 def setenv(permanent=True, key=None, value=None):
     if permanent:
         """
-        HERE is the way for permanently set 
+        HERE is the way for permanently env-set under windows
+        Administrator is required
         # with /m means system env
         # without /m means user env
         """
-        os.system(r"setx %s %s /m"%(key, value))
+        systype = platform.system()
+        if systype == "Windows":
+            os.system(r"setx %s %s /m"%(key, value))
+        else:
+            os.environ['%s'%key]=value
     else:
         os.environ['%s'%key]=value
 
@@ -107,14 +112,14 @@ def pip_conf_install(src=None):
         if not src or not os.path.exists(src):
             src = os.path.join(os.path.dirname(__file__), 'pip.conf')
         systype = platform.system()
-        md5 = ClslqMd5()
-        if(systype == "Windows"):
+        if systype == "Windows":
             pipdotdir = os.path.join(os.getenv('APPDATA'), "pip")
             pip_dest = os.path.join(pipdotdir, "pip.ini")
         else:
             pipdotdir = os.path.join(os.getenv('HOME'), ".pip")
             pip_dest = os.path.join(pipdotdir, "pip.conf")
         mkdir_p(pipdotdir)
+        md5 = ClslqMd5()
         if os.path.exists(pip_dest) and md5.same(src, pip_dest):
             click.secho("{} exist already".format(pip_dest))
             return

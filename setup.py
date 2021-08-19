@@ -192,7 +192,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            "clslq = clslqcli:main"
+            "clslq = clslq.clslq:main"
         ]
     },
     cmdclass={

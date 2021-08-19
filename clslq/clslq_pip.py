@@ -51,7 +51,7 @@ from .clslq_utils import pipguess
 def pip(ctx, pypi, trusted_host):
     #click.echo(ctx.args)
     # upgrade pip first
-    #os.system(pipguess()+'install --upgrade pip')
+    os.system(pipguess()+'install --upgrade pip')
     _cmdline = pipguess()
     _change_pypi_cmds = [ 'install', 'download', 'list', 'search']
     _change_pypi = False

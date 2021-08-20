@@ -31,6 +31,8 @@ from .clslq_config import ClslqConfigUnique
 
 from .clslq_log import ClslqLogger
 from .clslq_md5 import ClslqMd5
+from .clslq_sql import ClslqSql
+from .clslq_sql import ClslqBaseTable
 
 from .clslq_utils import mkdir_p
 
@@ -39,7 +41,8 @@ __all__ = [
     'ClslqConfig', 'ClslqConfigUnique',
     'ClslqLogger',
     'mkdir_p',
-    'ClslqMd5'
+    'ClslqMd5',
+    'ClslqSql', 'ClslqBaseTable'
 ]
 
 """Logger wapper"""

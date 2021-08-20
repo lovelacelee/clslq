@@ -1,11 +1,29 @@
 import os
 import sys
 from pprint import pprint
+from pytest import raises
+from sqlalchemy.sql.schema import Column, Table
 
-sys.path.append(os.getcwd())
+# ignore install clslq 
+sys.path.insert(0, os.getcwd())
 from clslq import ClslqConfig
 from clslq import ClslqConfigUnique
 from clslq import clslog
+from clslq import ClslqSql
+from clslq import ClslqBaseTable
+# create sql table
+from sqlalchemy import MetaData 
+from sqlalchemy import Table
+from sqlalchemy import Column
+from sqlalchemy import Integer
+from sqlalchemy import String
+
+class User(ClslqBaseTable):
+    __tablename__ = 'user'
+    user_id = Column(Integer, primary_key=True, autoincrement=True)
+    user_name = Column(String(16), nullable=False, default=None)
+    email_address = Column(String(60), default=None)
+    nickname = Column(String(50), nullable=False, default=None)
 
 class TestCases():
     configpath = os.path.dirname(__file__)
@@ -13,6 +31,21 @@ class TestCases():
     '''
     Test cases for clslq logger
     '''
+
+    def test_db(self):
+        db = ClslqSql()
+        db.create('sqlite:///pytest/sqlte.db')
+        db.create_table(User)
+        test = User(user_name='test', email_address="xx", nickname="xx")
+        db.insert(test)
+        db.query(User).filter(User.user_name == 'test').update({'user_name': 'new'})
+        db.commit()
+
+        for i in db.query(User).all():
+            clslog.info("id:{} name:{}".format(i.user_id, i.user_name))
+        assert db.query(User).count() == 1
+        db.delete(test)
+        assert db.query(User).count() == 0
 
     def test_log(self):
         clslog.info("info")

@@ -4,27 +4,26 @@ from setuptools import Command
 import shutil
 import os
 import version
-version=version.__version__
+
+version = version.__version__
+
 
 def match(list, s):
     if s in list:
         return True
     return False
-    
+
+
 def rmdir(path):
     removelist = [
-        'build',
-        '.pytest_cache',
-        '__pycache__',
-        'clslq.egg-info',
-        '.eggs', 
+        'build', '.pytest_cache', '__pycache__', 'clslq.egg-info', '.eggs',
         'dist'
     ]
-    for root,dirs,files in os.walk(path):
+    for root, dirs, files in os.walk(path):
         for d in dirs:
             t = os.path.join(root, d)
             father = os.path.basename(root)
-            if father =='.git':
+            if father == '.git':
                 continue
             if os.path.exists(t) and match(removelist, d):
                 try:
@@ -42,9 +41,11 @@ def rmdir(path):
                 except:
                     pass
 
+
 class CleanCommand(Command):
     description = "distclean"
     user_options = []
+
     # This method must be implemented
     def initialize_options(self):
         pass
@@ -52,10 +53,12 @@ class CleanCommand(Command):
     # This method must be implemented
     def finalize_options(self):
         pass
+
     def run(self):
-        workdir=os.path.dirname(os.path.abspath(__file__))
+        workdir = os.path.dirname(os.path.abspath(__file__))
         print("distclean work root:{}".format(workdir))
         rmdir(workdir)
+
 
 class PublishCommand(Command):
 
@@ -89,18 +92,23 @@ class PublishCommand(Command):
         os.system("python -m pip install -U setuptools twine wheel")
         os.system("python setup.py sdist bdist_wheel")
         if self.test:
-            os.system("twine upload --repository-url https://test.pypi.org/legacy/ dist/*")
+            os.system(
+                "twine upload --repository-url https://test.pypi.org/legacy/ dist/*"
+            )
         elif self.release:
             os.system("twine upload dist/*")
         else:
-            os.system("twine upload --repository-url http://gw.lovelacelee.com:8002/ dist/*")
-            
+            os.system(
+                "twine upload --repository-url http://gw.lovelacelee.com:8002/ dist/*"
+            )
+
         os.system("git status")
         os.system("git commit -a -m 'update'")
         os.system("git push")
 
+
 with open('ChangeLog', mode='r', encoding='utf-8') as f:
-   history = f.read()
+    history = f.read()
 
 setup(
     name="clslq",
@@ -108,34 +116,27 @@ setup(
     author="Connard.Lee",
     author_email="admin@lovelacelee.com",
     description="Connard's python library.",
-    long_description = history,
+    long_description=history,
     # Project home
     url="http://git.lovelacelee.com",
     install_requires=[
         'loguru',
         'Click',
-        'pipenv'
+        'pipenv',
+        'sqlalchemy',
     ],
-
     platforms=["all"],
-    keywords = [
-        'clslq',
-        'clslqutils'
-    ],
+    keywords=['clslq', 'clslqutils'],
     # setup.py needs
     setup_requires=[
         'setuptools',
         'Click',
-        'twine'
+        'twine',
     ],
-    requires=[
-        'loguru'
-    ],
+    requires=['loguru'],
     # python3 setup.py test
     tests_require=[
-        'pytest>=3.3.1',
-        'pytest-cov>=2.5.1',
-        'pytest-html'
+        'pytest>=3.3.1', 'pytest-cov>=2.5.1', 'sqlalchemy', 'pytest-html'
     ],
     python_requires='>=3',
     # setup_requires or tests_require packages
@@ -143,8 +144,7 @@ setup(
     dependency_links=[
         #"http://gw.lovelacelee.com:8002/clslq-1.1.0.tar.gz",
     ],
-
-    classifiers = [
+    classifiers=[
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
@@ -157,7 +157,6 @@ setup(
 
         # Project type
         'Topic :: Software Development :: Build Tools',
-
         'License :: OSI Approved :: MIT License',
 
         # Target Python version
@@ -173,30 +172,23 @@ setup(
 
     # setuptools.find_packages
     packages=find_packages(exclude=["pytest"]),
-    package_dir = {'clslq': 'clslq'},
+    package_dir={'clslq': 'clslq'},
     # Static files: config/service/pictures
     data_files=[
         # root directory such as: c:\python39\
-        #('', ['conf/*.conf']), 
+        #('', ['conf/*.conf']),
         #('/usr/lib/systemd/system/', ['bin/*.service']),
         #('', ['clslq/pip.conf']),
         #('clslq', ['Pipfile']),
     ],
     # Will be packed
     package_data={
-        'clslq':['*.conf', '*.txt', '*.md'],
+        'clslq': ['*.conf', '*.txt', '*.md'],
     },
     # Will not be packed
-    exclude_package_data={
-        'useless':['*.in']
-    },
-    entry_points={
-        'console_scripts': [
-            "clslq = clslq.cli:main"
-        ]
-    },
+    exclude_package_data={'useless': ['*.in']},
+    entry_points={'console_scripts': ["clslq = clslq.cli:main"]},
     cmdclass={
         "distclean": CleanCommand,
         "publish": PublishCommand
-    }
-)
+    })

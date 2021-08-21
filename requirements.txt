@@ -2,3 +2,4 @@ loguru
 pipenv
 click
 alive-progress
+sqlalchemy

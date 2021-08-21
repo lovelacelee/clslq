@@ -1,7 +1,6 @@
 # clslq
 
 Connard's python library.
-
 CLSLQ is a python common use function library from Connard Lee since 2021.
 
 

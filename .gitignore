@@ -8,3 +8,5 @@ dist
 test-report.html
 build
 pytest/*.db
+Pipfile.lock
+.vscode

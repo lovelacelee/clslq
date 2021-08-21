@@ -1,27 +1,14 @@
-# -*- encoding:utf-8 -*-
+# -*- encoding: utf-8 -*-
 '''
-MIT License
-
-Copyright (c) 2021 Connard Lee
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+@File    : clslq_singleton
+@Time    : 2021/08/21 23:47:35
+@Author  : Connard Lee
+@Contact : lovelacelee@gmail.com
+@License : MIT License Copyright (c) 2008~2021 Connard Lee
+@Desc    : Connard's python library. 
 '''
+
+
 def clslq_singleton(cls, *args, **kv):
     """
     Define a class as a singleton class, function wrapper
@@ -33,11 +20,14 @@ def clslq_singleton(cls, *args, **kv):
                 pass
     """
     _instance = {}
+
     def inner():
         if cls not in _instance:
             _instance[cls] = cls(*args, **kv)
         return _instance[cls]
+
     return inner
+
 
 class SingletonClass(object):
     """
@@ -54,6 +44,7 @@ class SingletonClass(object):
             cls._instance = orig.__new__(cls, *args, **kw)
         return cls._instance
 
+
 class SingletonMetaclass(type):
     """
     Metaclass implement
@@ -62,10 +53,13 @@ class SingletonMetaclass(type):
             pass
     """
     _instances = {}
+
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
-            cls._instances[cls] = super(SingletonMetaclass, cls).__call__(*args, **kwargs)
+            cls._instances[cls] = super(SingletonMetaclass,
+                                        cls).__call__(*args, **kwargs)
         return cls._instances[cls]
+
 
 """
 Some other singleton class implement method

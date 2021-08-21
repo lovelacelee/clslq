@@ -1,26 +1,11 @@
-# -*- encoding:utf-8 -*-
+# -*- encoding: utf-8 -*-
 '''
-MIT License
-
-Copyright (c) 2021 Connard Lee
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+@File    : clslq_sql
+@Time    : 2021/08/21 23:47:28
+@Author  : Connard Lee
+@Contact : lovelacelee@gmail.com
+@License : MIT License Copyright (c) 2008~2021 Connard Lee
+@Desc    : Connard's python library. 
 '''
 
 from sqlalchemy import create_engine
@@ -40,12 +25,14 @@ from sqlalchemy.orm import relationship
 # Base Data object
 ClslqBaseTable = declarative_base()
 
+
 class ClslqSql(object):
+    """ClslqSql is a wrapper class for SQLAlchemy
     """
-    ClslqSql is a wrapper class for SQLAlchemy
-    """
+    #
     __engine = None
     __session = None
+
     def __init__(self) -> None:
         super().__init__()
 
@@ -83,14 +70,13 @@ class ClslqSql(object):
         self.__session = scoped_session(sessionmaker(bind=self.__engine))
 
     def init(self, driver, user, passwd, host, port, dbname):
-        self.create(url.URL(
-            drivername=driver, 
-            username=user,
-            password=passwd,
-            host=host,
-            port=port,
-            database=dbname
-        ))
+        self.create(
+            url.URL(drivername=driver,
+                    username=user,
+                    password=passwd,
+                    host=host,
+                    port=port,
+                    database=dbname))
 
     def create_table(self, table=ClslqBaseTable):
         """
@@ -128,7 +114,7 @@ class ClslqSql(object):
             raise e
         finally:
             session.close()
-            
+
     def query(self, table=None):
         '''
         How to filter
@@ -148,7 +134,7 @@ class ClslqSql(object):
         finally:
             session.close()
         return result
-    
+
     def commit(self):
         session = self.__session()
         session.commit()

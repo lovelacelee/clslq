@@ -1,27 +1,13 @@
-# -*- encoding:utf-8 -*-
+# -*- encoding: utf-8 -*-
 '''
-MIT License
-
-Copyright (c) 2021 Connard Lee
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+@File    : clslq_config
+@Time    : 2021/08/21 23:47:58
+@Author  : Connard Lee
+@Contact : lovelacelee@gmail.com
+@License : MIT License Copyright (c) 2008~2021 Connard Lee
+@Desc    : Connard's python library. 
 '''
+
 import os
 import sys
 import json
@@ -38,11 +24,13 @@ try:
 except Exception as e:
     traceback.format_exc()
 
+
 class ClslqConfigType(Enum):
     CCJson = 1
     CCYaml = 2
     CCIni = 3
     CCXml = 4
+
 
 class ClslqConfig(object):
     """
@@ -62,6 +50,7 @@ class ClslqConfig(object):
     _type = ClslqConfigType.CCJson
     '''Only valid as xml config'''
     _tree = None
+
     def __init__(self, file="config.json") -> None:
         self._filepath = os.path.dirname(os.path.abspath(__file__))
         self._execpath = os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -70,7 +59,10 @@ class ClslqConfig(object):
         self.load(file)
 
     def __repr__(self) -> str:
-        return '<ClslqConfig[{} @{}@{}] {}>'.format(self._type, self._filepath, self._execpath, self._config)
+        return '<ClslqConfig[{} @{}@{}] {}>'.format(self._type, self._filepath,
+                                                    self._execpath,
+                                                    self._config)
+
     def _guess_suffix(self, file):
         try:
             suffix = os.path.splitext(file)[-1]
@@ -86,6 +78,7 @@ class ClslqConfig(object):
             return ClslqConfigType.CCXml
         else:
             return None
+
     def get(self, key=None):
         '''Return json object'''
         try:
@@ -126,6 +119,7 @@ class ClslqConfig(object):
         finally:
             #print(self._config)
             pass
+
     def save(self, file):
         savetype = self._guess_suffix(file)
         if self._type != savetype:

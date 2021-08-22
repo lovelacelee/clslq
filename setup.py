@@ -119,7 +119,7 @@ class DocBuildCommand(Command):
         shutil.copyfile('favicon.ico', os.path.join('source', 'favicon.ico'))
 
         os.system(
-            "sphinx-apidoc --no-toc --maxdepth 3 --force -o source {} clslq setup.py"
+            "sphinx-apidoc --maxdepth 5 --separate --force --force -o source {} clslq setup.py"
             .format(os.getcwd()))
         os.system("sphinx-build -D html_theme=bizstyle -D language=zh_CN \
             -D html_logo=logo.png \

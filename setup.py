@@ -60,6 +60,77 @@ class CleanCommand(Command):
         rmdir(workdir)
 
 
+class DocBuildCommand(Command):
+    description = "doc build"
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def sphinx_html_sidebars(self):
+        with open(os.path.join('source', 'conf.py'), 'a+') as f:
+            f.writelines([
+                '\r\n',
+                'html_sidebars = {\n',
+                "'**': ['globaltoc.html', 'sourcelink.html', 'searchbox.html'],\n",
+                "'using/windows': ['windowssidebar.html', 'searchbox.html'],\n",
+                "}\n",
+                # "html_additional_pages = {\n",
+                # "'download': 'customdownload.html',\n",
+                # "}\n",
+            ])
+
+    def run(self):
+        shutil.rmtree("source", ignore_errors=True)
+        shutil.rmtree("build", ignore_errors=True)
+        """sphinx-quickstart create doc tree
+        ```
+        import os
+        import sys
+        sys.path.insert(0, os.path.abspath('./../'))
+        html_theme = 'classic'
+        extensions:sphinx.ext.napoleon
+        More info @https://www.sphinx-doc.org/en/master/contents.html
+        third-party theme https://sphinx-themes.org/
+        official theme only clask and bizstyle are recommended
+        ```
+        """
+        os.system(
+            "sphinx-quickstart --sep {} -p CLSLQ -a Connard.Lee -v {} -r {} -l en \
+            --ext-autodoc --ext-intersphinx --ext-doctest --ext-imgmath --ext-todo \
+            --extensions sphinx.ext.napoleon \
+            --extensions sphinx.ext.autosummary \
+            --extensions sphinx.ext.githubpages \
+            --extensions sphinx.ext.graphviz\
+            --no-makefile --no-batchfile --no-use-make-mod --ext-coverage ".
+            format(os.getcwd(), version, version))
+
+        self.sphinx_html_sidebars()
+        with open(os.path.join('source', 'conf.py'), 'a+') as f:
+            f.writelines([
+                '\r\n', 'import os\n', 'import sys\n',
+                "sys.path.insert(0, os.path.abspath('./../'))\n"
+            ])
+
+        shutil.copyfile('logo.png', os.path.join('source', 'logo.png'))
+        shutil.copyfile('favicon.ico', os.path.join('source', 'favicon.ico'))
+
+        os.system(
+            "sphinx-apidoc --no-toc --maxdepth 3 --force -o source {} clslq setup.py"
+            .format(os.getcwd()))
+        os.system("sphinx-build -D html_theme=bizstyle -D language=zh_CN \
+            -D html_logo=logo.png \
+            -D html_favicon=favicon.ico \
+            -a -b html ./source ./build/zh_CN")
+        os.system("sphinx-build -D html_theme=bizstyle -D language=en \
+            -D html_logo=logo.png \
+            -D html_favicon=favicon.ico \
+            -a -b html ./source ./build/en")
+
+
 class PublishCommand(Command):
 
     description = "Publish a new version to pypi"
@@ -128,15 +199,14 @@ setup(
     platforms=["all"],
     keywords=['clslq', 'clslqutils'],
     # setup.py needs
-    setup_requires=[
-        'setuptools',
-        'Click',
-        'twine',
-    ],
+    setup_requires=['setuptools', 'Click', 'twine', 'sphinx'],
     requires=['loguru'],
     # python3 setup.py test
     tests_require=[
-        'pytest>=3.3.1', 'pytest-cov>=2.5.1', 'sqlalchemy', 'pytest-html'
+        'pytest>=3.3.1',
+        'pytest-cov>=2.5.1',
+        'sqlalchemy',
+        'pytest-html',
     ],
     python_requires='>=3',
     # setup_requires or tests_require packages
@@ -190,5 +260,6 @@ setup(
     entry_points={'console_scripts': ["clslq = clslq.cli:main"]},
     cmdclass={
         "distclean": CleanCommand,
-        "publish": PublishCommand
+        "publish": PublishCommand,
+        "doc": DocBuildCommand
     })

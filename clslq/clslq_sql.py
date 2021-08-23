@@ -1,12 +1,21 @@
 # -*- encoding: utf-8 -*-
 '''
-@File    : clslq_sql
-@Time    : 2021/08/21 23:47:28
-@Author  : Connard Lee
-@Contact : lovelacelee@gmail.com
-@License : MIT License Copyright (c) 2008~2021 Connard Lee
-@Desc    : Connard's python library. 
+CLSLQ is a python library and command toolsets of Connard
+
+Most of the contents are written in progress of python learning 
+
+
+clslq_sql
+
+Created: 2021/08/23 14:27:37
+
+Contact : lovelacelee@gmail.com
+
+MIT License Copyright (c) 2008~2021 Connard Lee
+
 '''
+
+
 
 from sqlalchemy import create_engine
 # text SQL statement

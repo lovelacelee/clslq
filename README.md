@@ -55,3 +55,16 @@ setup.py help
 $ python3 setup.py --help
 $ python3 setup.py --help-commands
 ```
+
+build doc
+```
+$ python3 setup.py builddoc
+$ python3 setup.py rundoc
+```
+
+publish project to pypi or local pypi
+
+```
+$ python3 setup.py publish
+$ python3 setup.py distclean
+```

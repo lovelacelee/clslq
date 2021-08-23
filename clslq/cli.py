@@ -1,17 +1,21 @@
 # -*- encoding: utf-8 -*-
 '''
-@File    : cli
+CLSLQ is a python library and command toolsets of Connard
 
-@Time    : 2021/08/23 10:30:01
+Most of the contents are written in progress of python learning 
 
-@Author  : Connard Lee
 
-@Contact : lovelacelee@gmail.com
+cli
 
-@License : MIT License Copyright (c) 2008~2021 Connard Lee
+Created: 2021/08/23 14:26:43
 
-@Desc    : \n 
+Contact : lovelacelee@gmail.com
+
+MIT License Copyright (c) 2008~2021 Connard Lee
+
 '''
+
+
 
 
 import click

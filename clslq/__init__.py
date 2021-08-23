@@ -4,7 +4,7 @@ CLSLQ is a python library and command toolsets of Connard
 
 Most of the contents are written in progress of python learning
 
-BSD Free License Copyright (c) Connard Lee
+MIT License Copyright (c) Connard Lee
 
 '''
 

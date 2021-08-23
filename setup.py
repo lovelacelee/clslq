@@ -61,7 +61,7 @@ class CleanCommand(Command):
 
 
 class DocRunCommand(Command):
-    description = "doc build"
+    description = "doc run"
     user_options = []
 
     def initialize_options(self):
@@ -71,10 +71,36 @@ class DocRunCommand(Command):
         pass
 
     def run(self):
+        os.system(
+            "sphinx-apidoc --maxdepth 5 --separate --force -o source {} setup.py clslq.py"
+            .format(os.getcwd()))
         os.system("sphinx-autobuild --host 0.0.0.0 --port 8000 source build/html")
 
 class DocBuildCommand(Command):
-    description = "doc build"
+    description = "doc run"
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        os.system(
+            "sphinx-apidoc --maxdepth 5 --separate --force -o source {} setup.py clslq.py"
+            .format(os.getcwd()))
+        os.system("sphinx-build -D html_theme=bizstyle -D language=zh_CN \
+            -D html_logo=logo.png \
+            -D html_favicon=favicon.ico \
+            -a -b html ./source ./build/zh_CN")
+        os.system("sphinx-build -D html_theme=bizstyle -D language=en \
+            -D html_logo=logo.png \
+            -D html_favicon=favicon.ico \
+            -a -b html ./source ./build/en")
+
+class DocCreateCommand(Command):
+    description = "doc create"
     user_options = []
 
     def initialize_options(self):
@@ -91,16 +117,16 @@ class DocBuildCommand(Command):
                 "'**': ['globaltoc.html', 'sourcelink.html', 'searchbox.html'],\n",
                 "'using/windows': ['windowssidebar.html', 'searchbox.html'],\n",
                 "}\n",
-                # "html_additional_pages = {\n",
-                # "'download': 'customdownload.html',\n",
-                # "}\n",
+
+                "html_theme = 'sphinx_rtd_theme'\n"
             ])
 
     def run(self):
         shutil.rmtree("source", ignore_errors=True)
-        shutil.rmtree("build", ignore_errors=True)
+        shutil.rmtree(os.path.join("build", 'en'), ignore_errors=True)
+        shutil.rmtree(os.path.join("build", 'zh_CN'), ignore_errors=True)
         """sphinx-quickstart create doc tree
-        ```
+
         import os
         import sys
         sys.path.insert(0, os.path.abspath('./../'))
@@ -109,7 +135,7 @@ class DocBuildCommand(Command):
         More info @https://www.sphinx-doc.org/en/master/contents.html
         third-party theme https://sphinx-themes.org/
         official theme only clask and bizstyle are recommended
-        ```
+
         """
         os.system(
             "sphinx-quickstart --sep {} -p CLSLQ -a Connard.Lee -v {} -r {} -l en \
@@ -131,17 +157,6 @@ class DocBuildCommand(Command):
         shutil.copyfile('logo.png', os.path.join('source', 'logo.png'))
         shutil.copyfile('favicon.ico', os.path.join('source', 'favicon.ico'))
 
-        os.system(
-            "sphinx-apidoc --maxdepth 5 --separate --force --force -o source {} clslq setup.py"
-            .format(os.getcwd()))
-        os.system("sphinx-build -D html_theme=bizstyle -D language=zh_CN \
-            -D html_logo=logo.png \
-            -D html_favicon=favicon.ico \
-            -a -b html ./source ./build/zh_CN")
-        os.system("sphinx-build -D html_theme=bizstyle -D language=en \
-            -D html_logo=logo.png \
-            -D html_favicon=favicon.ico \
-            -a -b html ./source ./build/en")
 
 
 class PublishCommand(Command):
@@ -274,6 +289,7 @@ setup(
     cmdclass={
         "distclean": CleanCommand,
         "publish": PublishCommand,
-        "builddoc": DocBuildCommand,
-        "rundoc": DocRunCommand
+        "docbuild": DocBuildCommand,
+        "docrun": DocRunCommand,
+        "doccreate": DocCreateCommand,
     })

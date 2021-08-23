@@ -1,11 +1,5 @@
 # -*- encoding: utf-8 -*-
-'''
-CLSLQ is a python library and command toolsets of Connard
-
-Most of the contents are written in progress of python learning 
-
-
-clslq_pip
+'''clslq_pip
 
 Created: 2021/08/23 14:27:20
 
@@ -40,12 +34,22 @@ from .clslq_utils import pipguess
                help="The wrapper for pip, use local pypi as default.")
 @click.pass_context
 def pip(ctx, pypi, trusted_host):
-    #click.echo(ctx.args)
+    """Wrapper of pip
+
+    Supported commands:
+    ```
     # upgrade pip first
     # python -m pip uninstall pip -y
     # python -m ensurepip
     # python -m pip install -U pip
     # os.system(pipguess()+'install --upgrade pip')
+    ```
+
+    Args:
+        pypi (<str>): Available pypi mirror url
+        trusted_host (<str>): pypi mirror domain
+    """
+    #click.echo(ctx.args)
     _cmdline = pipguess()
     _change_pypi_cmds = ['install', 'download', 'list', 'search']
     _change_pypi = False

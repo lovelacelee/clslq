@@ -1,11 +1,5 @@
 # -*- encoding: utf-8 -*-
-'''
-CLSLQ is a python library and command toolsets of Connard
-
-Most of the contents are written in progress of python learning 
-
-
-clslq_utils
+'''clslq_utils
 
 Created: 2021/08/23 14:27:43
 
@@ -27,10 +21,13 @@ from .clslq_md5 import ClslqMd5
 
 
 def mkdir_p(absolute_path):
-    """
-    mkdir -p implement
-    Usage: mkdir_p('D:\\A\\B\\C.txt')
-           mkdir_p('~/A/B/C')
+    """mkdir -p implement
+    
+    Usage: 
+    
+    mkdir_p('D:\\A\\B\\C.txt')
+
+    mkdir_p('~/A/B/C')
     """
     path = os.path.dirname(absolute_path)
     if not os.path.exists(path):

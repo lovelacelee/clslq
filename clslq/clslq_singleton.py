@@ -1,11 +1,5 @@
 # -*- encoding: utf-8 -*-
-'''
-CLSLQ is a python library and command toolsets of Connard
-
-Most of the contents are written in progress of python learning 
-
-
-clslq_singleton
+'''clslq_singleton
 
 Created: 2021/08/23 14:27:30
 
@@ -16,16 +10,17 @@ MIT License Copyright (c) 2008~2021 Connard Lee
 '''
 
 
-
 def clslq_singleton(cls, *args, **kv):
-    """
-    Define a class as a singleton class, function wrapper
-    Only support __init__ function without parameters
-    Usage:
-        @clslq_singleton
-        class Cls(object):
-            def __init__(self):
-                pass
+    """Wrapper function to construct a singleton, usage:
+
+    @clslq_singleton
+
+    class Cls(object):
+        def __init__(self):
+            pass
+
+    :return: a singleton class
+    :rtype: object
     """
     _instance = {}
 
@@ -38,13 +33,13 @@ def clslq_singleton(cls, *args, **kv):
 
 
 class SingletonClass(object):
-    """
-    Singleton class wapper
-    Only support __init__ function without parameters
-    Usage:
-        class Cls(SingletonClass):
-            def __init__(self):
-                pass
+    """ Singleton class wapper
+    Only support **__init__** function without parameters, usage:
+
+    class Cls(SingletonClass):
+        def __init__(self):
+            pass
+
     """
     def __new__(cls, *args, **kw):
         if not hasattr(cls, '_instance'):
@@ -54,11 +49,10 @@ class SingletonClass(object):
 
 
 class SingletonMetaclass(type):
-    """
-    Metaclass implement
-    Usage:
-        class Cls(metaclass=SingletonMetaclass):
-            pass
+    """Metaclass implement, usage:
+
+    class Cls(metaclass=SingletonMetaclass):
+        pass
     """
     _instances = {}
 

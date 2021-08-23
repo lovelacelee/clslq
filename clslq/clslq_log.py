@@ -1,11 +1,5 @@
 # -*- encoding: utf-8 -*-
-'''
-CLSLQ is a python library and command toolsets of Connard
-
-Most of the contents are written in progress of python learning 
-
-
-clslq_log
+'''clslq_log
 
 Created: 2021/08/23 14:27:03
 
@@ -24,6 +18,12 @@ from .clslq_utils import mkdir_p
 
 
 class ClslqLogger(SingletonClass):
+    """Gloable logging wrapper
+
+    This class inherits a module named loguru, ClslqLogger module will use pure logging
+    if loguru module not imported correctly.
+
+    """
     _logfile = None
     _filehdr = None
     _loglevel = logging.DEBUG
@@ -57,7 +57,17 @@ class ClslqLogger(SingletonClass):
 
     @property
     def log(self, filename=None):
+        """get a logger
+
+        Args:
+            filename (Path, optional): Log to file. Defaults to None.
+
+        Returns:
+            logger: <loguru.logger> returns if loguru imported correctly, otherwise
+            <root_logger> returns
+        """
         try:
+        
             '''pip install logru'''
             from loguru import logger
             if filename:
@@ -65,14 +75,12 @@ class ClslqLogger(SingletonClass):
                     "logs/app.log",
                     rotation="2 days",
                     retention="14",
-                    format=
-                    '[{time:YYYY-MM-DD HH:mm:ss} |{level:8.8s}| {file}:{line}]{message}',
+                    format='[{time:YYYY-MM-DD HH:mm:ss} |{level:8.8s}| {file}:{line}]{message}',
                     encoding='utf-8',
                     enqueue=True)
             logger.add(
                 sys.stderr,
-                format=
-                '[<green>{time:YYYY-MM-DD HH:mm:ss}</green> |{level:8.8s}| {file}:<green>{line}</green>]{message}',
+                format='[<green>{time:YYYY-MM-DD HH:mm:ss}</green> |{level:8.8s}| {file}:<green>{line}</green>]{message}',
                 encoding='utf-8',
                 enqueue=True,
                 colorize=True)

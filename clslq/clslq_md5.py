@@ -1,11 +1,5 @@
 # -*- encoding: utf-8 -*-
-'''
-CLSLQ is a python library and command toolsets of Connard
-
-Most of the contents are written in progress of python learning 
-
-
-clslq_md5
+'''clslq_md5
 
 Created: 2021/08/23 14:27:12
 
@@ -20,6 +14,8 @@ import hashlib
 
 
 class ClslqMd5(object):
+    """wheel of md5
+    """
     def __init__(self) -> None:
         super().__init__()
 
@@ -28,7 +24,7 @@ class ClslqMd5(object):
 
     def file(self, filename):
         '''
-        :param filename:
+        :param filename: calc md5 digest from a file
         :return: md5 string
         '''
         m = hashlib.md5()
@@ -42,7 +38,7 @@ class ClslqMd5(object):
 
     def string(self, content):
         '''
-        :param content:
+        :param content: calc digest from string
         :return: md5 string
         '''
         m = hashlib.md5(content)
@@ -52,7 +48,7 @@ class ClslqMd5(object):
         '''
         :param f1: first filename or content<string>
         :param f2: second filename or content<string>
-        :return: True if md5(f1) == md5(f2)
+        :return: md5(f1) == md5(f2)
         '''
         if type(f1) == type(str) == type(f2):
             md51 = self.string(f1)

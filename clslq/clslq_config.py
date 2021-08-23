@@ -1,10 +1,5 @@
 # -*- encoding: utf-8 -*-
 '''
-CLSLQ is a python library and command toolsets of Connard
-
-Most of the contents are written in progress of python learning 
-
-
 clslq_config
 
 Created: 2021/08/23 14:26:54
@@ -34,6 +29,8 @@ except Exception as e:
 
 
 class ClslqConfigType(Enum):
+    """Support types: Json, Yaml, Ini, Xml
+    """
     CCJson = 1
     CCYaml = 2
     CCIni = 3
@@ -41,20 +38,24 @@ class ClslqConfigType(Enum):
 
 
 class ClslqConfig(object):
-    """
-    ClslqConfig is a config manager
-    Aim to support json/xml/ini/yaml to dict manager
+    """ClslqConfig is a config manager
+
+    Aim to support json/xml/ini/yaml parse and dump operations. 
+
+    Object can be easily used ad python dict type.
+
+    Json: object managed as dict
+
+    Ini: object managed as dict
+
+    Xml: ElementTree managed object
+    
+    Yaml: object managed as dict
+
     """
     _filepath = None
     _execpath = None
-    '''
-    Json: object as dict
-    Ini: object as dict
-    Xml: ElementTree object
-    Yaml: object as dict
-    '''
     _config = None
-    '''ClslqConfig type'''
     _type = ClslqConfigType.CCJson
     '''Only valid as xml config'''
     _tree = None
@@ -88,14 +89,21 @@ class ClslqConfig(object):
             return None
 
     def get(self, key=None):
-        '''Return json object'''
+        """get config key from parsed contents
+
+        Args:
+            key (<str>, optional): key of value or object. Defaults to None.
+
+        Returns:
+            None
+        """
         try:
             if self._type == ClslqConfigType.CCXml:
                 if key:
                     return self._config.find(key)
             elif self._type == ClslqConfigType.CCJson or \
-                self._type == ClslqConfigType.CCIni or \
-                self._type == ClslqConfigType.CCYaml:
+                    self._type == ClslqConfigType.CCIni or \
+                    self._type == ClslqConfigType.CCYaml:
                 return self._config[key]
             return self._config
         except Exception as e:
@@ -104,6 +112,14 @@ class ClslqConfig(object):
             pass
 
     def load(self, file):
+        """load config file
+
+        Args:
+            file: relative or absolute path to file
+
+        Raises:
+            Exception.args: Exception.args("Not supported")
+        """
         self._type = self._guess_suffix(file)
         try:
             if self._type == ClslqConfigType.CCIni:
@@ -122,13 +138,24 @@ class ClslqConfig(object):
                     else:
                         raise Exception.args("Not supported")
         except Exception as e:
-            #print(e)
+            # print(e)
             pass
         finally:
-            #print(self._config)
+            # print(self._config)
             pass
 
     def save(self, file):
+        """dump config contents to file
+
+        Args:
+            file (Path): Where to dump file, path would be relative or absolute
+
+        Raises:
+            Exception.args: Exception.args("Not supported")
+
+        Returns:
+            False: If config content type is not match <file>'s suffix
+        """
         savetype = self._guess_suffix(file)
         if self._type != savetype:
             return False
@@ -146,9 +173,14 @@ class ClslqConfig(object):
                     else:
                         raise Exception.args("Not supported")
         except Exception as e:
-            #print(e)
+            # print(e)
             pass
 
 
 class ClslqConfigUnique(ClslqConfig, metaclass=SingletonMetaclass):
+    """Globally unique ClslqConfig object
+
+    Args:
+        metaclass: Defaults to SingletonMetaclass.
+    """
     pass

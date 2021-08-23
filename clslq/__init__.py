@@ -17,12 +17,12 @@ from .clslq_config import ClslqConfigUnique
 
 from .clslq_log import ClslqLogger
 from .clslq_md5 import ClslqMd5
-from .clslq_sql import ClslqSql
-from .clslq_sql import ClslqBaseTable
+
+from .clslq_sql import *
 
 from .version import CLSLQ_Version
 
-from .clslq_utils import mkdir_p
+from .clslq_utils import *
 
 __all__ = [
     'SingletonClass', 'SingletonMetaclass', 'clslq_singleton'

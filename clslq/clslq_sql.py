@@ -1,11 +1,5 @@
 # -*- encoding: utf-8 -*-
-'''
-CLSLQ is a python library and command toolsets of Connard
-
-Most of the contents are written in progress of python learning 
-
-
-clslq_sql
+'''clslq_sql
 
 Created: 2021/08/23 14:27:37
 
@@ -36,9 +30,48 @@ ClslqBaseTable = declarative_base()
 
 
 class ClslqSql(object):
-    """ClslqSql is a wrapper class for SQLAlchemy
+    """wheel of SQL operations
+
+    :param dburl: sqlalchemy url parameter
+
+        dialect+driver://username:password@host:port/database
+
+        password is URL encoded(import urllib.parse)
+       
+        sqlite://<nohostname>/<path>, where <path> is relative
+
+        sqlite:///foo.db, means foo.db in current path
+
+        sqlte+pysqlte:///:memory:
+
+        sqlite:////absolute/path/to/foo.db, absolute after '///'
+
+        sqlite:///C:\\path\\to\\foo.db, Windows absolute path
+
+        r'sqlite:///C:\\path\\to\\foo.db', Windows alternative using raw string
+
+        engine = create_engine('sqlite://') Using SQLite :memory:
+
+        postgresql://scott:tiger@localhost:5432/mydatabase
+
+        postgresql+psycopg2://scott:tiger@localhost/mydatabase
+
+        postgresql+pg8000://scott:tiger@localhost/mydatabase
+
+        mysql://scott:tiger@localhost/foo
+
+        mysql+mysqldb://scott:tiger@localhost/foo
+
+        mysql+pymysql://scott:tiger@localhost/foo
+
+        oracle://scott:tiger@127.0.0.1:1521/sidname
+
+        oracle+cx_oracle://scott:tiger@tnsname
+
+        mssql+pyodbc://scott:tiger@mydsn
+
+        mssql+pymssql://scott:tiger@hostname:port/dbname
     """
-    #
     __engine = None
     __session = None
 
@@ -49,36 +82,22 @@ class ClslqSql(object):
         return super().__repr__()
 
     def create(self, dburl):
-        """
-        dialect+driver://username:password@host:port/database
-        password is URL encoded(import urllib.parse)
-        ------------------------------------------------------
-        sqlite://<nohostname>/<path>, where <path> is relative
-        sqlite:///foo.db, means foo.db in current path
-        sqlte+pysqlte:///:memory:
-        sqlite:////absolute/path/to/foo.db, absolute after '///'
-        sqlite:///C:\\path\\to\\foo.db, Windows absolute path
-        r'sqlite:///C:\\path\\to\\foo.db', Windows alternative using raw string
-        engine = create_engine('sqlite://') Using SQLite :memory:
-
-        postgresql://scott:tiger@localhost:5432/mydatabase
-        postgresql+psycopg2://scott:tiger@localhost/mydatabase
-        postgresql+pg8000://scott:tiger@localhost/mydatabase
-
-        mysql://scott:tiger@localhost/foo
-        mysql+mysqldb://scott:tiger@localhost/foo
-        mysql+pymysql://scott:tiger@localhost/foo
-
-        oracle://scott:tiger@127.0.0.1:1521/sidname
-        oracle+cx_oracle://scott:tiger@tnsname
-
-        mssql+pyodbc://scott:tiger@mydsn
-        mssql+pymssql://scott:tiger@hostname:port/dbname
+        """Create engine 
         """
         self.__engine = create_engine(dburl, echo=True)
         self.__session = scoped_session(sessionmaker(bind=self.__engine))
 
     def init(self, driver, user, passwd, host, port, dbname):
+        """Init database
+
+        Args:
+            driver (str): pymysql/mysqldb/pyodbc
+            user (str): username of database connection
+            passwd (str): pasword of database connection
+            host (str): database host
+            port (str): database port
+            dbname (str): database instance name
+        """
         self.create(
             url.URL(drivername=driver,
                     username=user,
@@ -89,7 +108,9 @@ class ClslqSql(object):
 
     def create_table(self, table=ClslqBaseTable):
         """
-        Create Table use MetaData, Column, and https://www.osgeo.cn/sqlalchemy/core/type_basics.html
+        Create table use MetaData, Column, 
+        
+        More on https://www.osgeo.cn/sqlalchemy/core/type_basics.html
         """
         try:
             table.metadata.create_all(self.__engine)
@@ -97,6 +118,15 @@ class ClslqSql(object):
             raise
 
     def insert(self, item=None):
+        """Insert an item
+
+        Args:
+            item (MetaData, optional): Basic data structure. Defaults to None.
+
+        Raises:
+            Exception: Any exception
+            e: Any exception
+        """
         if not item:
             raise Exception('item is required')
         dbsession = sessionmaker(bind=self.__engine)
@@ -127,11 +157,15 @@ class ClslqSql(object):
     def query(self, table=None):
         '''
         How to filter
+
         result.filter(Table.attr == value)
+
         How to update
+
         result.filter(Table.attr == value).update({'attr': 'new_value'})
         filter().delete()
         filter().all()
+    
         '''
         if not table:
             raise Exception('table is required')

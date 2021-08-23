@@ -100,16 +100,11 @@ import os
 import sys
 
 here = os.path.dirname(__file__)
-clslq = os.path.join(here, '../')
+clslq = os.path.join(here, './../')
 print("Here: {} CLSLQ:{}".format(here, clslq))
-os.system("echo 1 && ls {}".format("/home/docs/"))
-os.system("echo 2 && ls {}".format("/home/docs/checkouts"))
-os.system("echo 3 && ls {}".format("/home/docs/checkouts/readthedocs.org/"))
-os.system("echo 4 && ls {}".format("/home/docs/checkouts/readthedocs.org/user_builds"))
-os.system("echo 5 && ls {}".format("/home/docs/checkouts/readthedocs.org/user_builds/clslq"))
-os.system("echo 6 && ls {}".format("/home/docs/checkouts/readthedocs.org/user_builds/clslq/envs"))
-os.system("echo 7 && ls {}".format("/home/docs/checkouts/readthedocs.org/user_builds/clslq/envs/latest"))
-os.system("echo 8 && ls {}".format("/home/docs/checkouts/readthedocs.org/user_builds/clslq/checkouts"))
+os.system("echo 1 && ls {}".format(here))
+os.system("echo 2 && ls {}".format(clslq))
+
 os.system("echo 9 && ls {}".format("/home/docs/checkouts/readthedocs.org/user_builds/clslq/checkouts/latest/"))
 os.system("echo 10 && ls {}".format("/home/docs/checkouts/readthedocs.org/user_builds/clslq/checkouts/latest/docs"))
 sys.path.insert(0, clslq)

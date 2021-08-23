@@ -1,9 +1,0 @@
-CHANGES
-=======
-
-* 1.1.6 Add wrapper for SQLAlchemy https://www.osgeo.cn/sqlalchemy/ 
-* 1.1.5 Add ClslqMd5, only install pip.conf once
-* 1.1.4 update
-* 1.1.3 update
-* 1.1.2 update
-* 1.1.1 Initial commit

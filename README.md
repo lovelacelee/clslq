@@ -1,25 +1,57 @@
-# clslq
+# CLSLQ
 
-Connard's python library.
-CLSLQ is a python common use function library from Connard Lee since 2021.
+![img](logo.png)
+
+CLSLQ is a python common use function library and toolsets.
+
+Basically collect some useful functions, classes, expressions in python learning process. Why python `pypi` packages suffixed with *.wheel*? Because we are making wheels, one on the other one.
+
+This project bootstrapped since 2021. 
 
 
-# Release
+# [ChangeLog](ChangeLog.md)
 
-* -202108- Started with config paser support[json/xml/ini/yaml support]
-* -202108- Fixed a common use logger via pure python library
+* Only support `python3`
 
-# Test cases
+# TODO
+
+- [x] QT widgets collections
+- [x] Cookiecutter intergrated
+- [v] SQL database operation wapper api
+- [v] Global root log wrapper
+- [v] GLobal config wrapper, parser and flusher
+
+# How-To
+
+Here is for the lost memory:
+
+## Use clslq command toolsets
 
 ```
-# `pip` if used as windows
-pip3 install pytest pytest-html
-# or 
-pip3 install -U -r requirements.txt
-python pytest
+$ pip3 install clslq -U
+$ clslq --version
+$ clslq --help
 ```
 
-## Basic function & Wrapper function
+## Running test cases
 
-* log wrapper
-* config wrapper
+```
+$ pip3 install pytest pytest-html
+$ pip3 install -U -r requirements/dev.txt
+$ pip3 install -U -r requirements/prod.txt
+$ python3 pytest
+```
+
+## Develop environment build 
+
+```
+$ python3 setup.py venv init
+(clslq-RJvATSUq)$ python3 setup.py doc
+```
+
+setup.py help
+
+```
+$ python3 setup.py --help
+$ python3 setup.py --help-commands
+```

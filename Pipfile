@@ -9,6 +9,14 @@ pipenv = "*"
 click = "*"
 
 [dev-packages]
+loguru = "*"
+pipenv = "*"
+click = "*"
+alive-progress = "*"
+sqlalchemy = "*"
+pytest = "*"
+pytest-html = "*"
+sphinx = "*"
 
 [requires]
 python_version = "3.9"

@@ -3,9 +3,9 @@ from setuptools import find_packages
 from setuptools import Command
 import shutil
 import os
-import version
+from clslq import version
 
-version = version.__version__
+version = version.CLSLQ_Version
 
 
 def match(list, s):
@@ -178,7 +178,7 @@ class PublishCommand(Command):
         os.system("git push")
 
 
-with open('ChangeLog', mode='r', encoding='utf-8') as f:
+with open('ChangeLog.md', mode='r', encoding='utf-8') as f:
     history = f.read()
 
 setup(
@@ -199,7 +199,7 @@ setup(
     platforms=["all"],
     keywords=['clslq', 'clslqutils'],
     # setup.py needs
-    setup_requires=['setuptools', 'Click', 'twine', 'sphinx'],
+    setup_requires=['setuptools', 'Click', 'twine', 'sphinx', 'sqlalchemy'],
     requires=['loguru'],
     # python3 setup.py test
     tests_require=[

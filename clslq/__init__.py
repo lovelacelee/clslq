@@ -1,11 +1,11 @@
 # -*- encoding: utf-8 -*-
 '''
-@File    : __init__
-@Time    : 2021/08/21 23:48:20
-@Author  : Connard Lee
-@Contact : lovelacelee@gmail.com
-@License : MIT License Copyright (c) 2008~2021 Connard Lee
-@Desc    : Connard's python library. 
+CLSLQ is a python library and command toolsets of Connard
+
+Most of the contents are written in progress of python learning
+
+BSD Free License Copyright (c) Connard Lee
+
 '''
 
 from .clslq_singleton import clslq_singleton
@@ -20,6 +20,8 @@ from .clslq_md5 import ClslqMd5
 from .clslq_sql import ClslqSql
 from .clslq_sql import ClslqBaseTable
 
+from .version import CLSLQ_Version
+
 from .clslq_utils import mkdir_p
 
 __all__ = [
@@ -31,4 +33,4 @@ __all__ = [
 __clslq_log = ClslqLogger()
 clslog = __clslq_log.log
 
-__version__ = "1.1.6"
+__version__ = CLSLQ_Version

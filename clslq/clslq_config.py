@@ -1,12 +1,6 @@
 # -*- encoding: utf-8 -*-
-'''
-@File    : clslq_config
-@Time    : 2021/08/21 23:47:58
-@Author  : Connard Lee
-@Contact : lovelacelee@gmail.com
-@License : MIT License Copyright (c) 2008~2021 Connard Lee
-@Desc    : Connard's python library. 
-'''
+
+
 
 import os
 import sys

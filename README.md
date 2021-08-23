@@ -68,3 +68,12 @@ publish project to pypi or local pypi
 $ python3 setup.py publish
 $ python3 setup.py distclean
 ```
+
+## Install to system or just for specified user
+
+for user
+
+```
+python3 install clslq --user
+python3 -m clslq.cli --help
+```

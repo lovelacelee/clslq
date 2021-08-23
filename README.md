@@ -15,11 +15,11 @@ This project bootstrapped since 2021.
 
 # TODO
 
-- [x] QT widgets collections
-- [x] Cookiecutter intergrated
-- [v] SQL database operation wapper api
-- [v] Global root log wrapper
-- [v] GLobal config wrapper, parser and flusher
+- [ ] QT widgets collections
+- [ ] Cookiecutter intergrated
+- [x] SQL database operation wapper api
+- [x] Global root log wrapper
+- [x] GLobal config wrapper, parser and flusher
 
 # How-To
 

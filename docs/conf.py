@@ -98,4 +98,8 @@ html_theme = 'sphinx_rtd_theme'
 
 import os
 import sys
-#sys.path.insert(0, os.path.abspath('./../'))
+
+here = os.path.dirname(__file__)
+clslq = os.path.join(here, '../')
+print("Here: {} CLSLQ:{}".format(here, clslq))
+sys.path.insert(0, clslq)

@@ -17,6 +17,8 @@ import shutil
 
 __location__ = os.path.join(os.getcwd(), os.path.dirname(
     inspect.getfile(inspect.currentframe())))
+    
+os.system("pip install -r requirements.txt")
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -36,7 +38,6 @@ try:  # for Sphinx >= 1.7
 except ImportError:
     from sphinx import apidoc
 
-os.system("pip install sphinx_rtd_theme --user")
 output_dir = os.path.join(__location__, "api")
 module_dir = os.path.join(__location__, "../clslq")
 try:

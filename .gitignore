@@ -11,3 +11,5 @@ pytest/*.db
 Pipfile.lock
 .vscode
 source
+docs/api
+docs/_build

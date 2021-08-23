@@ -36,7 +36,7 @@ try:  # for Sphinx >= 1.7
 except ImportError:
     from sphinx import apidoc
 
-output_dir = os.path.join(__location__, ".")
+output_dir = __location__
 module_dir = os.path.join(__location__, "../clslq")
 try:
     shutil.rmtree(output_dir)

@@ -102,9 +102,6 @@ import sys
 here = os.path.dirname(__file__)
 clslq = os.path.join(here, './../')
 print("Here: {} CLSLQ:{}".format(here, clslq))
-os.system("echo 1 && ls {}".format(here))
-os.system("echo 2 && ls {}".format(clslq))
-
-os.system("echo 9 && ls {}".format("/home/docs/checkouts/readthedocs.org/user_builds/clslq/checkouts/latest/"))
-os.system("echo 10 && ls {}".format("/home/docs/checkouts/readthedocs.org/user_builds/clslq/checkouts/latest/docs"))
+os.system("echo workdir: && ls {}".format(here))
+os.system("echo root: && ls {}".format(clslq))
 sys.path.insert(0, clslq)

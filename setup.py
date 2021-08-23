@@ -98,6 +98,7 @@ class DocBuildCommand(Command):
             -D html_logo=logo.png \
             -D html_favicon=favicon.ico \
             -a -b html ./source ./build/en")
+        shutil.copytree('source', 'docs')
 
 class DocCreateCommand(Command):
     description = "doc create"
@@ -202,8 +203,10 @@ class PublishCommand(Command):
             )
 
         os.system("git status")
-        os.system("git commit -a -m 'update'")
+        os.system("git tag -a v{} -m 'add tag on {}'".format(version, version))
+        os.system("git commit -a -m 'publish on version %s'"%version)
         os.system("git push")
+        os.system("git push origin --tags")
 
 
 with open('ChangeLog.md', mode='r', encoding='utf-8') as f:

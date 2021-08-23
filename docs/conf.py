@@ -36,7 +36,7 @@ try:  # for Sphinx >= 1.7
 except ImportError:
     from sphinx import apidoc
 
-output_dir = os.path.join(__location__, "api")
+output_dir = os.path.join(__location__, ".")
 module_dir = os.path.join(__location__, "../clslq")
 try:
     shutil.rmtree(output_dir)
@@ -58,7 +58,7 @@ try:
 except Exception as e:
     print("Running `sphinx-apidoc` failed!\n{}".format(e))
 
-    
+
 # -- Project information -----------------------------------------------------
 
 project = 'CLSLQ'

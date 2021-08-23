@@ -1,3 +1,4 @@
+-r prod.txt
 pytest
 pytest-html
 sphinx

@@ -4,9 +4,9 @@
 
 CLSLQ is a python common use function library and toolsets.
 
-Basically collect some useful functions, classes, expressions in python learning process. Why python `pypi` packages suffixed with *.wheel*? Because we are making wheels, one on the other one.
+Basically collect some useful functions, classes, expressions in python learning process. Why python `pypi` packages suffixed with *.wheel*? Because we are making wheels, one on another.
 
-This project bootstrapped since 2021. 
+This project bootstrapped since 2021, the playground in python, first python library and module on the way. 
 
 
 # [ChangeLog](ChangeLog.md)
@@ -19,7 +19,7 @@ This project bootstrapped since 2021.
 - [ ] Cookiecutter intergrated
 - [x] SQL database operation wapper api
 - [x] Global root log wrapper
-- [x] GLobal config wrapper, parser and flusher
+- [x] Global config wrapper, parser and flusher
 
 # How-To
 

@@ -17,6 +17,10 @@ sqlalchemy = "*"
 pytest = "*"
 pytest-html = "*"
 sphinx = "*"
+sphinx-autobuild = "*"
+sphinx_rtd_theme = "*"
+sphinx_markdown_tables = "*"
+recommonmark = "*"
 
 [requires]
-python_version = "3.9"
+python_version = ">=3.6"

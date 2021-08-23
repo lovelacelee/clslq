@@ -60,6 +60,19 @@ class CleanCommand(Command):
         rmdir(workdir)
 
 
+class DocRunCommand(Command):
+    description = "doc build"
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        os.system("sphinx-autobuild --host 0.0.0.0 --port 8000 source build/html")
+
 class DocBuildCommand(Command):
     description = "doc build"
     user_options = []
@@ -261,5 +274,6 @@ setup(
     cmdclass={
         "distclean": CleanCommand,
         "publish": PublishCommand,
-        "doc": DocBuildCommand
+        "builddoc": DocBuildCommand,
+        "rundoc": DocRunCommand
     })

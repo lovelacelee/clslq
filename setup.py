@@ -175,7 +175,7 @@ class PublishCommand(Command):
     def initialize_options(self):
         """Set default values for options."""
         self.test = False
-        self.release = False
+        self.release = True
         self.local = True
 
     def finalize_options(self):

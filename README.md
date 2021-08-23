@@ -2,7 +2,12 @@
 
 ![img](logo.png)
 
-CLSLQ is a python common use function library and toolsets.
+[![GitHub version](https://badge.fury.io/gh/lovelacelee%2Fclslq.svg)](https://badge.fury.io/gh/lovelacelee%2Fclslq)
+[![Documentation Status](https://readthedocs.org/projects/clslq/badge/?version=latest)](https://clslq.readthedocs.io/zh_CN/latest/?badge=latest)
+[![PyPI version](https://badge.fury.io/py/clslq.svg)](https://badge.fury.io/py/clslq)
+      
+
+[CLSLQ](https://clslq.readthedocs.io/) is a python common use function library and toolsets.
 
 Basically collect some useful functions, classes, expressions in python learning process. Why python `pypi` packages suffixed with *.wheel*? Because we are making wheels, one on another.
 

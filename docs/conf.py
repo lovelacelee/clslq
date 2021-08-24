@@ -60,6 +60,8 @@ try:
 except Exception as e:
     print("Running `sphinx-apidoc` failed!\n{}".format(e))
 
+# Active to do rst.
+todo_include_todos=True
 
 # -- Project information -----------------------------------------------------
 
@@ -89,7 +91,9 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.githubpages',
     'sphinx.ext.graphviz',
+    'sphinx.ext.inheritance_diagram',
     'sphinx.ext.coverage',
+    'sphinx_rtd_theme'
 ]
 
 # Add any paths that contain templates here, relative to this directory.

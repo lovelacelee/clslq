@@ -20,9 +20,12 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
                       message='%(prog)s-%(version)s')
 def main():
     """
+    CLSLQ is a python library and command toolsets of Connard.
+    Most of the contents are written in progress of python learning.
     CLSLQ include some quick-start python programming functions, wrappers and tools.
     For more information, please contact [admin@lovelacelee.com].
-    @click: https://click-docs-zh-cn.readthedocs.io/zh/latest/
+    Documents available on https://clslq.readthedocs.io/.
+    MIT License Copyright (c) Connard Lee.
     """
     pass
 

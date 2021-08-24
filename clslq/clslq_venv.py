@@ -8,8 +8,7 @@ Usage: clslq venv [OPTIONS]
   Python venv manager of CLSLQ implement.
 
 Options:
-  -p, --pipconf PATH  Install pip.conf to local system, default use
-                      E:\LCCODE\clslq\clslq\pip.conf.
+  -p, --pipconf PATH  Install pip.conf to local system, default use pip.conf.
   -d, --delete        Delete python virtual environment, venv will be created.
   -c, --create        Create python virtual environment, venv will be created.
   -h, --help          Show this message and exit.

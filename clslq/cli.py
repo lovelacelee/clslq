@@ -2,11 +2,7 @@
 '''
 cli
 
-Created: 2021/08/23 14:26:43
-
-Contact : lovelacelee@gmail.com
-
-MIT License Copyright (c) 2008~2021 Connard Lee
+click.group(name='main')
 
 '''
 

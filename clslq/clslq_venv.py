@@ -1,14 +1,20 @@
 # -*- encoding: utf-8 -*-
 '''clslq_venv
 
-Created: 2021/08/23 14:27:50
+Help to create python virtual environment, pipenv and click module used.
 
-Contact : lovelacelee@gmail.com
+Usage: clslq venv [OPTIONS]
 
-MIT License Copyright (c) 2008~2021 Connard Lee
+  Python venv manager of CLSLQ implement.
+
+Options:
+  -p, --pipconf PATH  Install pip.conf to local system, default use
+                      E:\LCCODE\clslq\clslq\pip.conf.
+  -d, --delete        Delete python virtual environment, venv will be created.
+  -c, --create        Create python virtual environment, venv will be created.
+  -h, --help          Show this message and exit.
 
 '''
-
 
 
 import click
@@ -27,12 +33,6 @@ from .clslq_utils import setenv
               '-d',
               flag_value="delete",
               help='Delete python virtual environment, venv will be created.')
-@click.option(
-    '--init',
-    '-i',
-    default=False,
-    flag_value="init",
-    help='Init dev enviroment when requirements.txt or Pipfile exists.')
 @click.option('--pipconf',
               '-p',
               type=click.Path(exists=True),
@@ -43,7 +43,7 @@ from .clslq_utils import setenv
     allow_extra_args=True,
     ignore_unknown_options=True,
 ),
-               help="Python venv manager of CLSLQ implement.")
+    help="Python venv manager of CLSLQ implement.")
 def venv(create, delete, init, pipconf):
     setenv(key='PIPENV_TEST_INDEX',
            value='https://pypi.tuna.tsinghua.edu.cn/simple')
@@ -59,11 +59,5 @@ def venv(create, delete, init, pipconf):
                     fg='green')
         os.system('pipenv --rm')
         exit()
-    if init:
-        requires = os.path.join(os.getcwd(), 'requirements.txt')
-        if os.path.exists(requires):
-            os.system(pipguess() + 'install -r %s' % requires)
-        else:
-            click.secho("{} is not exist.".format(requires), fg='red')
 
     os.system("pipenv shell")

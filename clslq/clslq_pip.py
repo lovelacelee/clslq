@@ -1,11 +1,16 @@
 # -*- encoding: utf-8 -*-
 '''clslq_pip
 
-Created: 2021/08/23 14:27:20
+Usage: clslq pip [OPTIONS]
 
-Contact : lovelacelee@gmail.com
+  The wrapper for pip, use local pypi as default.
 
-MIT License Copyright (c) 2008~2021 Connard Lee
+Options:
+  -t, --trusted-host TEXT  The trusted mirror host, default:
+                           gw.lovelacelee.com.
+  -i, --pypi TEXT          The pypi mirror url, default use:
+                           http://gw.lovelacelee.com:8002
+  -h, --help               Show this message and exit.
 
 '''
 

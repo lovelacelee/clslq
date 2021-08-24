@@ -9,7 +9,7 @@
 
 [CLSLQ](https://clslq.readthedocs.io/) is a python common use function library and toolsets.
 
-Basically collect some useful functions, classes, expressions in python learning process. Why python `pypi` packages suffixed with *.wheel*? Because we are making wheels, one on another.
+Basically collect some useful functions, classes, expressions in python learning process. Why python `pypi` packages suffixed with *.whl(.wheel)*? Because we are making wheels, one on another.
 
 This project bootstrapped since 2021, the playground in python, first python library and module on the way. 
 
@@ -63,8 +63,9 @@ $ python3 setup.py --help-commands
 
 build doc
 ```
-$ python3 setup.py builddoc
-$ python3 setup.py rundoc
+$ python3 setup.py doccreate
+$ python3 setup.py docbuild
+$ python3 setup.py docrun
 ```
 
 publish project to pypi or local pypi

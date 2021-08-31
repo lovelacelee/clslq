@@ -49,7 +49,7 @@ class ClslqConfig(object):
     Ini: object managed as dict
 
     Xml: ElementTree managed object
-    
+
     Yaml: object managed as dict
 
     """

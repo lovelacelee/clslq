@@ -13,15 +13,11 @@ MIT License Copyright (c) 2008~2021 Connard Lee
 
 from sqlalchemy import create_engine
 # text SQL statement
-from sqlalchemy import text
+from sqlalchemy import *
 from sqlalchemy.engine import url
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column
-from sqlalchemy import Integer
-from sqlalchemy import String
-from sqlalchemy import BigInteger
 from contextlib import contextmanager
 from sqlalchemy.orm import relationship
 

@@ -115,6 +115,9 @@ def pip_conf_install(src=None):
         if systype == "Windows":
             pipdotdir = os.path.join(os.getenv('APPDATA'), "pip")
             pip_dest = os.path.join(pipdotdir, "pip.ini")
+        elif systype == "Darwin":
+            pipdotdir = os.path.join(os.getenv('HOME'), "/Library/Application\ Support/pip/pip")
+            pip_dest = os.path.join(pipdotdir, "pip.conf")
         else:
             pipdotdir = os.path.join(os.getenv('HOME'), ".pip")
             pip_dest = os.path.join(pipdotdir, "pip.conf")

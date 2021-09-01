@@ -43,7 +43,7 @@ from .clslq_utils import setenv
     ignore_unknown_options=True,
 ),
     help="Python venv manager of CLSLQ implement.")
-def venv(create, delete, init, pipconf):
+def venv(create, delete, pipconf):
     setenv(key='PIPENV_TEST_INDEX',
            value='https://pypi.tuna.tsinghua.edu.cn/simple')
     setenv(key='WORKON_HOME', value='venv')

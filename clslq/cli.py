@@ -15,9 +15,7 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
 @click.group(name="main", context_settings=CONTEXT_SETTINGS)
-@click.version_option(package_name='clslq',
-                      prog_name='clslq',
-                      message='%(prog)s-%(version)s')
+@click.version_option(message='%(prog)s-%(version)s')
 def main():
     """
     CLSLQ is a python library and command toolsets of Connard.

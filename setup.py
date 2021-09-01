@@ -74,7 +74,9 @@ class DocRunCommand(Command):
         os.system(
             "sphinx-apidoc --maxdepth 5 --separate --force -o source {} setup.py clslq.py"
             .format(os.getcwd()))
-        os.system("sphinx-autobuild --host 0.0.0.0 --port 8000 source build/html")
+        os.system(
+            "sphinx-autobuild --host 0.0.0.0 --port 8000 source build/html")
+
 
 class DocBuildCommand(Command):
     description = "doc run"
@@ -100,6 +102,7 @@ class DocBuildCommand(Command):
             -a -b html ./source ./build/en")
         shutil.copytree('source', 'docs')
 
+
 class DocCreateCommand(Command):
     description = "doc create"
     user_options = []
@@ -113,13 +116,10 @@ class DocCreateCommand(Command):
     def sphinx_html_sidebars(self):
         with open(os.path.join('source', 'conf.py'), 'a+') as f:
             f.writelines([
-                '\r\n',
-                'html_sidebars = {\n',
+                '\r\n', 'html_sidebars = {\n',
                 "'**': ['globaltoc.html', 'sourcelink.html', 'searchbox.html'],\n",
                 "'using/windows': ['windowssidebar.html', 'searchbox.html'],\n",
-                "}\n",
-
-                "html_theme = 'sphinx_rtd_theme'\n"
+                "}\n", "html_theme = 'sphinx_rtd_theme'\n"
             ])
 
     def run(self):
@@ -159,66 +159,62 @@ class DocCreateCommand(Command):
         shutil.copyfile('favicon.ico', os.path.join('source', 'favicon.ico'))
 
 
-
 class PublishCommand(Command):
 
     description = "Publish a new version to pypi"
 
     user_options = [
         # The format is (long option, short option, description).
-        # python setup.py --help
-        ("test", 't', "Publish to test.pypi.org"),
+        # python setup.py publish --help
+        # python setup.py publish -r/-l
         ("release", 'r', "Publish to pypi.org"),
-        ("local", 'l', "Publish to https://pypi.lovelacelee.com/ [default]"),
+        ("lovelacelee", 'l', "Publish to pypi.lovelacelee.com"),
     ]
 
     def initialize_options(self):
         """Set default values for options."""
-        self.test = False
-        self.release = True
+        self.release = False
         self.lovelacelee = True
 
     def finalize_options(self):
         """Post-process options."""
-        if self.test:
-            print("V%s will publish to the test.pypi.org" % version)
-        elif self.release:
-            print("V%s will publish to the pypi.org" % version)
-        else:
-            print("V%s will publish to the https://pypi.lovelacelee.com/" % version)
+
+        if self.release:
+            print("V%s will publish to the https://upload.pypi.org/legacy/" %
+                  version)
+        if self.lovelacelee:
+            print("V%s will publish to the https://pypi.lovelacelee.com/" %
+                  version)
 
     def run(self):
         """Run command."""
         os.system("python -m pip install -U setuptools twine wheel")
         os.system("python setup.py sdist bdist_wheel")
-        try:
-            if self.test:
-                os.system(
-                    "twine upload --repository-url https://test.pypi.org/legacy/ dist/*"
-                )
-        except Exception as e:
-            print(e)
+
         try:
             if self.release:
                 os.system("twine upload dist/*")
         except Exception as e:
             print(e)
+
         try:
             if self.lovelacelee:
+                # use .pypirc
+                #os.system("twine upload -r lovelacelee dist/*")
                 os.system(
-                    "twine upload --repository-url https://pypi.lovelacelee.com/ dist/*"
+                    "twine upload --verbose --username lovelacelee --repository-url https://pypi.lovelacelee.com/ dist/*"
                 )
         except Exception as e:
             print(e)
 
-        os.system("git add .")
-        os.system("git status")
-        tagcmd = "git tag -a v{} -m 'add tag on {}'".format(version, version)
-        os.system(tagcmd)
-        commitcmd = "git commit -a -m 'publish on version %s'"%version
-        os.system(commitcmd)
-        os.system("git push")
-        os.system("git push origin --tags")
+        print("Here is git command tips:")
+        print("$ git add .")
+
+        print("$ git commit -m 'publish on version %s'" % version)
+        print("$ git tag -a v{} -m 'add tag on {}'".format(version, version))
+
+        print("$ git push")
+        print("$ git push origin --tags")
 
 
 with open('ChangeLog.md', mode='r', encoding='utf-8') as f:
@@ -231,6 +227,7 @@ setup(
     author_email="admin@lovelacelee.com",
     description="Connard's python library.",
     long_description=history,
+    long_description_content_type='text/markdown',
     # Project home
     url="http://git.lovelacelee.com",
     install_requires=[

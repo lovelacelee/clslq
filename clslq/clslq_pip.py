@@ -9,7 +9,7 @@ Options:
   -t, --trusted-host TEXT  The trusted mirror host, default:
                            gw.lovelacelee.com.
   -i, --pypi TEXT          The pypi mirror url, default use:
-                           http://gw.lovelacelee.com:8002
+                           https://pypi.lovelacelee.com/
   -h, --help               Show this message and exit.
 
 '''
@@ -26,8 +26,8 @@ from .clslq_utils import pipguess
 @click.option(
     '--pypi',
     '-i',
-    default='http://gw.lovelacelee.com:8002',
-    help='The pypi mirror url, default use: http://gw.lovelacelee.com:8002')
+    default='https://pypi.lovelacelee.com/',
+    help='The pypi mirror url, default use: https://pypi.lovelacelee.com/')
 @click.option('--trusted-host',
               '-t',
               default='gw.lovelacelee.com',

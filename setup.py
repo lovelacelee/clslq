@@ -169,14 +169,14 @@ class PublishCommand(Command):
         # python setup.py --help
         ("test", 't', "Publish to test.pypi.org"),
         ("release", 'r', "Publish to pypi.org"),
-        ("local", 'l', "Publish to gw.lovelacelee.com:8002 [default]"),
+        ("local", 'l', "Publish to https://pypi.lovelacelee.com/ [default]"),
     ]
 
     def initialize_options(self):
         """Set default values for options."""
         self.test = False
         self.release = True
-        self.local = True
+        self.lovelacelee = True
 
     def finalize_options(self):
         """Post-process options."""
@@ -185,26 +185,38 @@ class PublishCommand(Command):
         elif self.release:
             print("V%s will publish to the pypi.org" % version)
         else:
-            print("V%s will publish to the gw.lovelacelee.com:8002" % version)
+            print("V%s will publish to the https://pypi.lovelacelee.com/" % version)
 
     def run(self):
         """Run command."""
         os.system("python -m pip install -U setuptools twine wheel")
         os.system("python setup.py sdist bdist_wheel")
-        if self.test:
-            os.system(
-                "twine upload --repository-url https://test.pypi.org/legacy/ dist/*"
-            )
-        elif self.release:
-            os.system("twine upload dist/*")
-        else:
-            os.system(
-                "twine upload --repository-url http://gw.lovelacelee.com:8002/ dist/*"
-            )
+        try:
+            if self.test:
+                os.system(
+                    "twine upload --repository-url https://test.pypi.org/legacy/ dist/*"
+                )
+        except Exception as e:
+            print(e)
+        try:
+            if self.release:
+                os.system("twine upload dist/*")
+        except Exception as e:
+            print(e)
+        try:
+            if self.lovelacelee:
+                os.system(
+                    "twine upload --repository-url https://pypi.lovelacelee.com/ dist/*"
+                )
+        except Exception as e:
+            print(e)
 
+        os.system("git add .")
         os.system("git status")
-        os.system("git tag -a v{} -m 'add tag on {}'".format(version, version))
-        os.system("git commit -a -m 'publish on version %s'"%version)
+        tagcmd = "git tag -a v{} -m 'add tag on {}'".format(version, version)
+        os.system(tagcmd)
+        commitcmd = "git commit -a -m 'publish on version %s'"%version
+        os.system(commitcmd)
         os.system("git push")
         os.system("git push origin --tags")
 
@@ -243,7 +255,7 @@ setup(
     # setup_requires or tests_require packages
     # will be written into metadata of *.egg
     dependency_links=[
-        #"http://gw.lovelacelee.com:8002/clslq-1.1.0.tar.gz",
+        #"https://pypi.lovelacelee.com/clslq-1.1.0.tar.gz",
     ],
     classifiers=[
         #   3 - Alpha

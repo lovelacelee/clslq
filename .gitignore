@@ -13,3 +13,4 @@ Pipfile.lock
 source
 docs/api
 docs/_build
+.clslq.json

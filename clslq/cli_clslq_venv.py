@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-'''clslq_venv
+'''cli_clslq_venv
 
 Help to create python virtual environment, pipenv and click module used.
 

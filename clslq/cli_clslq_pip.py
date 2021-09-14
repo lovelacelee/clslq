@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-'''clslq_pip
+'''cli_clslq_pip
 
 Usage: clslq pip [OPTIONS]
 

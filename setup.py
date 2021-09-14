@@ -224,7 +224,7 @@ setup(
     name="clslq",
     version=version,
     author="Connard.Lee",
-    author_email="admin@lovelacelee.com",
+    author_email="lovelacelee@gmail.com",
     description="Connard's python library.",
     long_description=history,
     long_description_content_type='text/markdown',

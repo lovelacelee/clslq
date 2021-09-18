@@ -11,7 +11,8 @@ MIT License Copyright (c) 2008~2021 Connard Lee
 
 '''
 
-import sys 
+import json 
+import requests 
 from .clslq_log import ClslqLogger
 
 __clslq_log = ClslqLogger()
@@ -31,15 +32,16 @@ class NotionAPI(object):
         Public intergration: Available for any Notion user.
 
     """
-    def __init__(self):
+    def __init__(self, token):
+        self.token = token
         pass
     def __repr__(self):
-        return "Notion API Beta"
+        return "Notion API Token: {}".format(self.token)
 
-    def Auth(self):
-        pass
     def CreateDb(self):
+        url = "https://api.notion.com/v1/databases/"
         pass
+
     def RetriveDb(self):
         pass
     def QueryDb(self):

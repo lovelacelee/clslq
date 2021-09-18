@@ -11,10 +11,12 @@ Usage: clslq notion [OPTIONS]
 
 import click
 import platform
-import os
 from .clslq_notion import NotionAPI
 from .clslq_config import ClslqConfigUnique
+from .clslq_log import ClslqLogger
+from notion_client import Client
 
+clslog = ClslqLogger().log
 
 @click.option('--verbose',
               '-v',
@@ -32,6 +34,21 @@ from .clslq_config import ClslqConfigUnique
 ),
     help="Notion API beta.")
 def notion(verbose, config):
-    click.secho("{}, {}".format(verbose, config), fg='green')
+
     clsconfig = ClslqConfigUnique(file=config)
-    click.secho("{}".format(clsconfig.get('secrets_from')))
+    click.secho("{}".format(clsconfig.get('secrets_from')), fg='green')
+
+
+    client = Client(auth=clsconfig.get('secrets_from'), notion_version="2021-08-16")
+
+    # clslog.info(client.search()['results'])
+    for i in client.search()['results']:
+        if i['object'] == 'database':
+            try:
+                title = i['title']
+                #if title:
+                for t in title:
+                    clslog.info(t)
+            except Exception as e:
+                pass
+ 

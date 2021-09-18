@@ -3,3 +3,5 @@ pipenv
 click
 alive-progress
 sqlalchemy
+requests
+notion-client

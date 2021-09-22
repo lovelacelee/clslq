@@ -1,3 +1,4 @@
+psutil
 loguru
 pipenv
 click
@@ -5,4 +6,4 @@ alive-progress
 sqlalchemy
 requests
 notion-client
-xlwings
+openpyxl

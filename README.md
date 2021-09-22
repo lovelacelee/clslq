@@ -88,4 +88,5 @@ python3 -m clslq.cli --help
 
 # Depends
 
-* ExcelSupported: [xlwings Chinese Doc](https://www.kancloud.cn/gnefnuy/xlwings-docs/1127454) | [Stable English version](https://docs.xlwings.org/en/stable/#)
+* ExcelSupported: [[Stable]](https://docs.xlwings.org/en/stable/#) Which only compatible with Windows and MacOS
+* [openpyxl](https://openpyxl.readthedocs.io/en/stable/) is compatible with Linux too.

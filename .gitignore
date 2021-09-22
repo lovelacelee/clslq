@@ -14,3 +14,4 @@ source
 docs/api
 docs/_build
 .clslq.json
+*.xlsx

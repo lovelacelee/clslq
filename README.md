@@ -85,3 +85,7 @@ for user
 python3 install clslq --user
 python3 -m clslq.cli --help
 ```
+
+# Depends
+
+* ExcelSupported: [xlwings Chinese Doc](https://www.kancloud.cn/gnefnuy/xlwings-docs/1127454) | [Stable English version](https://docs.xlwings.org/en/stable/#)

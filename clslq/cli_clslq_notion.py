@@ -14,8 +14,16 @@ import click
 import platform
 import pprint
 import json
+import os
 import re
 import traceback
+import pandas
+# Support email
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.header import Header
+
 from openpyxl import Workbook
 from openpyxl.styles import Font
 from openpyxl.styles import colors
@@ -31,9 +39,14 @@ from notion_client import Client
 clslog = ClslqLogger().log
 
 
-class WorkReportXlsx(object):
-    def __init__(self):
-        super(WorkReportXlsx)
+class Report(object):
+    """Base class of Report
+
+    Args:
+        object (wbname): Workbook name
+    """
+
+    def __init__(self, wbname):
         self.wb = Workbook()
         self.sht = self.wb.active
         self.default_border = Border(left=Side(border_style='thin', color='000000'),
@@ -42,6 +55,90 @@ class WorkReportXlsx(object):
                                      top=Side(border_style='thin',
                                               color='000000'),
                                      bottom=Side(border_style='thin', color='000000'))
+        self.wbname = wbname
+
+    def render_html(self, title):
+        df = pandas.read_excel(self.wbname+'.xlsx', sheet_name='WR', header=1)
+        pandas.set_option('colheader_justify', 'center')
+
+        df.style.hide_index()  # Hide index col
+
+        #df.to_html(wbname+'.html', index=False, na_rep="", border=1)
+        with open(self.wbname+'.html', encoding='utf-8', mode='w') as f:
+            f.write("""<html><head><title>""")
+            f.write(title)
+            f.write("""</title></head>
+            <style>
+                .tablestyle {
+                    font-size: 11pt;
+                    font-family: Arial;
+                    border-collapse: collapse;
+                    border: 1px solid silver;
+                }
+                .tablestyle td
+                {
+                    width: 300px;
+                }
+                .tablestyle td:nth-child(1)
+                {
+                    width: 80px;
+                    text-align: center;
+                }
+                .tablestyle td:nth-child(3)
+                {
+                    width: 60px;
+                    text-align: center;
+                }
+                .tablestyle td, th {
+                    padding: 5px;
+                }
+                .tablestyle tr:nth-child(even) {
+                    background: #E0E0E0;
+                }
+                .tablestyle th {
+                    background: #ff8936;
+                }
+                .tablestyle tr:hover {
+                    background: silver;
+                    cursor: pointer;
+                }
+            </style>
+            <body>
+            """)
+            f.write(df.to_html(classes='tablestyle', index=False, na_rep=""))
+            f.write("""</body></html>""")
+
+    def send_email(self, config, title):
+        email = config.get('email')
+        smtpserver = email['sender']['smtpserver']
+        user = email['sender']['user']
+        pwd = email['sender']['pwd']
+        receivers = email['receivers']
+        clslog.info("{} {} {}".format(smtpserver, user, title))
+
+        msg = MIMEMultipart()
+        msg['From'] = "{}".format(user)
+        msg['To'] = ",".join(receivers)
+        msg['Subject'] = Header(title, 'utf-8')
+        with open(self.wbname+'.html', "r", encoding='utf-8') as f:
+            msg.attach(MIMEText(f.read(), 'html', 'utf-8'))
+        try:
+            smtp = smtplib.SMTP()
+            smtp.connect(smtpserver)
+            smtp.login(user, pwd)
+            smtp.sendmail(user, receivers, msg.as_string())
+            clslog.info('Email sent to {} done'.format(receivers))
+            smtp.quit()
+            smtp.close()
+        except Exception as e:
+            clslog.critical(e)
+
+    def remove_files(self):
+        os.remove(self.wbname+'.html')
+        os.remove(self.wbname+'.xlsx')
+
+
+class WeekReport(Report):
 
     def set_head(self, head):
         """Set sheet head
@@ -124,7 +221,7 @@ class WorkReportXlsx(object):
         except Exception as e:
             pass
         finally:
-            return result
+            return result.replace('\n', ' ')
 
     def content_fill(self, item, row):
         self.sht['A'+str(row)] = self.content_parse_type(item, row)
@@ -147,7 +244,7 @@ class WorkReportXlsx(object):
                     horizontal='center', vertical='center', wrap_text=True)
                 cell.border = self.default_border
 
-    def simple_wr(self, wbname, database):
+    def dump(self, wbname, database):
         # Change sheet name
         self.sht.title = 'WR'
         self.set_head(wbname)
@@ -163,10 +260,14 @@ class WorkReportXlsx(object):
         self.wb.close()
 
 
-@click.option('--verbose',
-              '-v',
-              flag_value="verbose",
-              help='Echo information when notion response.')
+@click.option('--week',
+              '-w',
+              flag_value='month',
+              help='Generate week report form notion account data')
+@click.option('--month',
+              '-m',
+              flag_value='month',
+              help='Generate month report form notion account data')
 @click.option('--config',
               '-c',
               type=click.Path(exists=True),
@@ -177,35 +278,49 @@ class WorkReportXlsx(object):
     ignore_unknown_options=True,
 ),
     help="Notion API beta.")
-def notion(verbose, config):
-
+def notion(week, month, config):
     clsconfig = ClslqConfigUnique(file=config)
-    click.secho("{}".format(clsconfig.get('secrets_from')), fg='green')
+    if clsconfig.get('secrets_from') is None:
+        click.secho(
+            "Make sure notion secret code is valid in .clslq.json", fg='red')
+        return
 
     client = Client(auth=clsconfig.get('secrets_from'),
                     notion_version="2021-08-16")
 
-    for i in client.search()['results']:
-        # print(json.dumps(i))
+    click.secho("Notion Accounts:", fg='yellow')
+    for u in client.users.list()['results']:
+        click.secho("{:8s} {}".format(u['name'], u['id']), fg='green')
+    if week:
+        click.secho("Week report search", fg='green')
+        for i in client.search()['results']:
+            if i['object'] == 'database':
+                try:
+                    database = client.databases.query(i['id'])
+                    title = i['title']
 
-        if i['object'] == 'database':
-            try:
-                database = client.databases.query(i['id'])
-                title = i['title']
-                # if title:
-                for t in title:
-                    plain_text = t['plain_text'].strip().replace(' → ', '~')
-                    plain_text_head = t['plain_text'][0:3]
-                    value = re.compile(r'^[0-9]+[0-9]$')
+                    for t in title:
+                        plain_text = t['plain_text'].strip().replace(
+                            ' → ', '~')
+                        plain_text_head = t['plain_text'][0:3]
+                        value = re.compile(r'^[0-9]+[0-9]$')
 
-                    if plain_text_head == 'WRT':
-                        clslog.info("Skip WRT[Work report template]")
-                        break
-                    if value.match(plain_text_head) == None:
-                        clslog.info("Skip database which is not WR")
-                        break
-                    wrp = WorkReportXlsx()
-                    wrp.simple_wr(plain_text, database)
-            except Exception as e:
-                clslog.error(e)
-                traceback.print_exc(e)
+                        if plain_text_head == 'WRT':
+                            break
+                        if value.match(plain_text_head) == None:
+                            break
+                        wrp = WeekReport(plain_text)
+                        wrp.dump(plain_text, database)
+                        wtitle = "{}({})".format(
+                            clsconfig.get('wr_title_prefix'), plain_text)
+                        wrp.render_html(wtitle)
+                        wrp.send_email(clsconfig, wtitle)
+                        # wrp.remove_files()
+
+                except Exception as e:
+                    clslog.error(e)
+                    traceback.print_exc(e)
+
+    else:
+        click.secho("Month report search", fg='green')
+        mtitle = config['mr_title_prefix']

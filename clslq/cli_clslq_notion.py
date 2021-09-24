@@ -298,13 +298,13 @@ def cli_week(client, clsconfig, excel, remove, force):
                     nowdate = datetime.datetime.now()
                     # Use BT-Panel timer task to trigger
                     if not force:
-                        if abs(enddate-nowdate) > datetime.timedelta(days=3):
-                            click.secho("End:{} now:{} weekday:{} delta:{} Week report expired".format(
-                                enddate, nowdate, nowdate.weekday(), abs(enddate-nowdate)), fg='green')
-                            break
                         if nowdate.weekday() != 5: # 0~6 means Monday~Sunday
                             clslog.warning("Today is not Saturday")
                             break
+                    if abs(enddate-nowdate) > datetime.timedelta(days=3):
+                        click.secho("End:{} now:{} weekday:{} delta:{} Week report expired".format(
+                            enddate, nowdate, nowdate.weekday(), abs(enddate-nowdate)), fg='green')
+                        break
                     wrp = WeekReport(plain_text)
                     wtitle = "{}({})".format(
                         clsconfig.get('wr_title_prefix'), plain_text)

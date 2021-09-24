@@ -274,7 +274,7 @@ class WeekReport(Report):
         return self.df
 
 
-def cli_week(client, clsconfig, excel, remove):
+def cli_week(client, clsconfig, excel, remove, force):
     for i in client.search()['results']:
         if i['object'] == 'database':
             try:
@@ -296,13 +296,14 @@ def cli_week(client, clsconfig, excel, remove):
                         t['mention']['date']['end'])
                     nowdate = datetime.datetime.now()
                     # Use BT-Panel timer task to trigger
-                    if abs(enddate-nowdate) > datetime.timedelta(days=3):
-                        click.secho("End:{} now:{} weekday:{} delta:{} Week report expired".format(
-                            enddate, nowdate, nowdate.weekday(), abs(enddate-nowdate)), fg='green')
-                        break
-                    if nowdate.weekday() != 5: # 0~6 means Monday~Sunday
-                        clslog.warning("Today is not Saturday")
-                        break
+                    if not force:
+                        if abs(enddate-nowdate) > datetime.timedelta(days=3):
+                            click.secho("End:{} now:{} weekday:{} delta:{} Week report expired".format(
+                                enddate, nowdate, nowdate.weekday(), abs(enddate-nowdate)), fg='green')
+                            break
+                        if nowdate.weekday() != 5: # 0~6 means Monday~Sunday
+                            clslog.warning("Today is not Saturday")
+                            break
                     wrp = WeekReport(plain_text)
                     wtitle = "{}({})".format(
                         clsconfig.get('wr_title_prefix'), plain_text)
@@ -324,7 +325,7 @@ def cli_week(client, clsconfig, excel, remove):
             except Exception as e:
                 clslog.error(e)
                 traceback.print_exc(e)
-def cli_month(client, clsconfig, remove):
+def cli_month(client, clsconfig, remove, force):
     
     nowdate = datetime.datetime.now()
     mtitle = "{}({}{:02})".format(
@@ -348,6 +349,11 @@ def cli_month(client, clsconfig, remove):
               flag_value='RemoveFiles',
               default=True,
               help='Remove files or not')
+@click.option('--force',
+              '-f',
+              flag_value='force',
+              default=False,
+              help='Force generate right now, otherwise limited by valid datetime')
 @click.option('--config',
               '-c',
               type=click.Path(exists=True),
@@ -358,7 +364,7 @@ def cli_month(client, clsconfig, remove):
     ignore_unknown_options=True,
 ),
     help="Notion Report Generator.")
-def notion(rtype, config, excel, remove):
+def notion(rtype, config, excel, remove, force):
 
     clsconfig = ClslqConfigUnique(file=config)
     if clsconfig.get('secrets_from') is None:
@@ -374,11 +380,11 @@ def notion(rtype, config, excel, remove):
         click.secho("{:8s} {}".format(u['name'], u['id']), fg='green')
     if 'week' == rtype:
         click.secho("Week report generator", fg='green')
-        cli_week(client, clsconfig, excel, remove)
+        cli_week(client, clsconfig, excel, remove, force)
     elif 'month' == rtype:
         click.secho("Month report generator", fg='green')
-        cli_month(client, clsconfig, remove)
+        cli_month(client, clsconfig, remove, force)
     else:
         click.secho("All reports generator", fg='green')
-        cli_week(client, clsconfig, excel, remove)
-        cli_month(client, clsconfig, remove)
+        cli_week(client, clsconfig, excel, remove, force)
+        cli_month(client, clsconfig, remove, force)

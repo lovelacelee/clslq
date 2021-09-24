@@ -7,12 +7,15 @@ Usage: clslq notion [OPTIONS]
 
 [openpyxl](https://openpyxl-chinese-docs.readthedocs.io/zh_CN/latest/tutorial.html)
 
+[pandas](https://www.pypandas.cn/)
+
 '''
 
 
 import click
-import platform
-import pprint
+import datetime
+import string
+import time
 import json
 import os
 import re
@@ -57,58 +60,33 @@ class Report(object):
                                      bottom=Side(border_style='thin', color='000000'))
         self.wbname = wbname
 
-    def render_html(self, title):
-        df = pandas.read_excel(self.wbname+'.xlsx', sheet_name='WR', header=1)
-        pandas.set_option('colheader_justify', 'center')
+    def render_html(self, title, df):
+        """Render html form template
 
-        df.style.hide_index()  # Hide index col
-
-        #df.to_html(wbname+'.html', index=False, na_rep="", border=1)
+        Args:
+            title (str): Title of html and email subject
+            df (object): Pandas DataFrame object
+        """
         with open(self.wbname+'.html', encoding='utf-8', mode='w') as f:
-            f.write("""<html><head><title>""")
-            f.write(title)
-            f.write("""</title></head>
-            <style>
-                .tablestyle {
-                    font-size: 11pt;
-                    font-family: Arial;
-                    border-collapse: collapse;
-                    border: 1px solid silver;
-                }
-                .tablestyle td
-                {
-                    width: 300px;
-                }
-                .tablestyle td:nth-child(1)
-                {
-                    width: 80px;
-                    text-align: center;
-                }
-                .tablestyle td:nth-child(3)
-                {
-                    width: 60px;
-                    text-align: center;
-                }
-                .tablestyle td, th {
-                    padding: 5px;
-                }
-                .tablestyle tr:nth-child(even) {
-                    background: #E0E0E0;
-                }
-                .tablestyle th {
-                    background: #ff8936;
-                }
-                .tablestyle tr:hover {
-                    background: silver;
-                    cursor: pointer;
-                }
-            </style>
-            <body>
-            """)
-            f.write(df.to_html(classes='tablestyle', index=False, na_rep=""))
-            f.write("""</body></html>""")
+            template = os.path.join(os.path.dirname(__file__), 'templates')
+            task = df[df[u'分类'] != u'工作计划']
+            plan = df[df[u'分类'] == u'工作计划']
+
+            with open(os.path.join(template, 'weekreport.html'), encoding='utf-8') as wr:
+                t = string.Template(wr.read())
+                f.write(t.safe_substitute({
+                    "title": title,
+                    "table": task.to_html(classes='tablestyle', index=False, na_rep=""),
+                    "plan": plan.to_html(classes='tablestyle', index=False, na_rep="")
+                }))
 
     def send_email(self, config, title):
+        """Send report email to receivers defined in .clslq.json
+
+        Args:
+            config (dict): Loaded json object from .clslq.json
+            title (str): Unicode string as email subject
+        """
         email = config.get('email')
         smtpserver = email['sender']['smtpserver']
         user = email['sender']['user']
@@ -134,13 +112,15 @@ class Report(object):
             clslog.critical(e)
 
     def remove_files(self):
-        os.remove(self.wbname+'.html')
-        os.remove(self.wbname+'.xlsx')
+        """Removes all generated files"""
+        if os.path.exists(self.wbname+'.html'):
+            os.remove(self.wbname+'.html')
+        if os.path.exists(self.wbname+'.xlsx'):
+            os.remove(self.wbname+'.xlsx')
 
 
 class WeekReport(Report):
-
-    def set_head(self, head):
+    def set_worksheet_head(self, head):
         """Set sheet head
 
         Args:
@@ -156,7 +136,7 @@ class WeekReport(Report):
         self.sht['A1'].fill = PatternFill("solid", fgColor="00FF8080")
         self.sht.row_dimensions[1].height = 20
 
-    def set_title(self):
+    def set_worksheet_title(self):
         u"""openpyxl 不支持按列设置样式
         """
         self.sht['A2'] = u"分类"
@@ -213,6 +193,15 @@ class WeekReport(Report):
             return result
 
     def content_parse_richtext(self, item, text):
+        """Parse Notion Column content
+
+        Args:
+            item (dict): Notion Column content
+            text (str): Unicode string means column title
+
+        Returns:
+            str: Cell result
+        """
         result = ''
         try:
             title = item[text]['rich_text']
@@ -223,7 +212,7 @@ class WeekReport(Report):
         finally:
             return result.replace('\n', ' ')
 
-    def content_fill(self, item, row):
+    def excel_worksheet_fill(self, item, row):
         self.sht['A'+str(row)] = self.content_parse_type(item, row)
         self.sht['B'+str(row)] = self.content_parse_title(item)
         self.sht['C'+str(row)] = self.content_parse_state(item, row)
@@ -244,26 +233,59 @@ class WeekReport(Report):
                     horizontal='center', vertical='center', wrap_text=True)
                 cell.border = self.default_border
 
-    def dump(self, wbname, database):
+    def excel_worksheet_dump(self, wbname, database):
         # Change sheet name
         self.sht.title = 'WR'
-        self.set_head(wbname)
-        self.set_title()
+        self.set_worksheet_head(wbname)
+        self.set_worksheet_title()
 
-        # print(json.dumps(database))
         row = 3
         for node in database['results']:
             item = node['properties']
-            self.content_fill(item, row)
+            self.excel_worksheet_fill(item, row)
             row = row + 1
         self.wb.save(filename=wbname+'.xlsx')
         self.wb.close()
+
+    def pandas_df_fill(self, database):
+        _type = []
+        _title = []
+        _state = []
+        _problem = []
+        _solve = []
+        _conclusion = []
+        for node in database['results']:
+            item = node['properties']
+            _type.append(self.content_parse_type(item, 0))
+            _title.append(self.content_parse_title(item))
+            _state.append(self.content_parse_state(item, 0))
+            _problem.append(self.content_parse_richtext(item, u'问题'))
+            _solve.append(self.content_parse_richtext(item, u'解决方法'))
+            _conclusion.append(self.content_parse_richtext(item, u'评审、复盘、总结'))
+        data = {
+            u'分类': pandas.Series(_type, index=range(len(_type))),
+            u'事项': pandas.Series(_title, index=range(len(_title))),
+            u'进展': pandas.Series(_state, index=range(len(_state))),
+            u'问题': pandas.Series(_problem, index=range(len(_problem))),
+            u'解决': pandas.Series(_solve, index=range(len(_solve))),
+            u'评审复盘总结备注': pandas.Series(_conclusion, index=range(len(_conclusion)))
+        }
+        self.df = pandas.DataFrame(data)
+        return self.df
 
 
 @click.option('--week',
               '-w',
               flag_value='month',
               help='Generate week report form notion account data')
+@click.option('--excel',
+              '-e',
+              flag_value='GenerateExcel',
+              help='Generate xlsx excel file or not')
+@click.option('--remove',
+              '-r',
+              flag_value='RemoveFiles',
+              help='Remove files or not')
 @click.option('--month',
               '-m',
               flag_value='month',
@@ -278,7 +300,7 @@ class WeekReport(Report):
     ignore_unknown_options=True,
 ),
     help="Notion API beta.")
-def notion(week, month, config):
+def notion(week, month, config, excel, remove):
     clsconfig = ClslqConfigUnique(file=config)
     if clsconfig.get('secrets_from') is None:
         click.secho(
@@ -296,6 +318,7 @@ def notion(week, month, config):
         for i in client.search()['results']:
             if i['object'] == 'database':
                 try:
+
                     database = client.databases.query(i['id'])
                     title = i['title']
 
@@ -304,18 +327,36 @@ def notion(week, month, config):
                             ' → ', '~')
                         plain_text_head = t['plain_text'][0:3]
                         value = re.compile(r'^[0-9]+[0-9]$')
-
+                        # Handle valid report database only
                         if plain_text_head == 'WRT':
                             break
                         if value.match(plain_text_head) == None:
                             break
+                        enddate = datetime.datetime.fromisoformat(
+                            t['mention']['date']['end'])
+                        nowdate = datetime.datetime.now()
+                        # Use BT-Panel timer task to trigger
+                        if abs(enddate-nowdate) > datetime.timedelta(days=3):
+                            click.secho("End:{} now:{} weekday:{} delta:{} Week report expired".format(
+                                enddate, nowdate, nowdate.weekday(), abs(enddate-nowdate)), fg='green')
+                            break
                         wrp = WeekReport(plain_text)
-                        wrp.dump(plain_text, database)
                         wtitle = "{}({})".format(
                             clsconfig.get('wr_title_prefix'), plain_text)
-                        wrp.render_html(wtitle)
+
+                        if excel:
+                            wrp.excel_worksheet_dump(plain_text, database)
+                            df = pandas.read_excel(
+                                plain_text+'.xlsx', sheet_name='WR', header=1)
+                        else:
+                            df = wrp.pandas_df_fill(database)
+                        pandas.set_option('colheader_justify', 'center')
+                        df.style.hide_index()  # Hide index col
+
+                        wrp.render_html(wtitle, df)
                         wrp.send_email(clsconfig, wtitle)
-                        # wrp.remove_files()
+                        if remove:
+                            wrp.remove_files()
 
                 except Exception as e:
                     clslog.error(e)

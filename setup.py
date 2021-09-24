@@ -235,6 +235,9 @@ setup(
         'Click',
         'pipenv',
         'sqlalchemy',
+        'notion-client',
+        'openpyxl',
+        'pandas'
     ],
     platforms=["all"],
     keywords=['clslq', 'clslqutils'],

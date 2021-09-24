@@ -300,6 +300,9 @@ def cli_week(client, clsconfig, excel, remove):
                         click.secho("End:{} now:{} weekday:{} delta:{} Week report expired".format(
                             enddate, nowdate, nowdate.weekday(), abs(enddate-nowdate)), fg='green')
                         break
+                    if nowdate.weekday() != 5: # 0~6 means Monday~Sunday
+                        clslog.warning("Today is not Saturday")
+                        break
                     wrp = WeekReport(plain_text)
                     wtitle = "{}({})".format(
                         clsconfig.get('wr_title_prefix'), plain_text)
@@ -338,10 +341,12 @@ def cli_month(client, clsconfig, remove):
 @click.option('--excel',
               '-e',
               flag_value='GenerateExcel',
+              default=False,
               help='Generate xlsx excel file or not')
 @click.option('--remove',
               '-r',
               flag_value='RemoveFiles',
+              default=True,
               help='Remove files or not')
 @click.option('--config',
               '-c',

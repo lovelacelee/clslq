@@ -23,7 +23,7 @@ This project bootstrapped since 2021, the playground in python, first python lib
 
 - [ ] QT widgets collections
 - [ ] Cookiecutter intergrated
-- [ ] Add Notion API support, Notion export functions.
+- [x] Add Notion week report generator.
 - [x] SQL database operation wapper api
 - [x] Global root log wrapper
 - [x] Global config wrapper, parser and flusher

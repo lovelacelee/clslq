@@ -39,6 +39,8 @@ from .clslq_config import ClslqConfigUnique
 from .clslq_log import ClslqLogger
 from notion_client import Client
 
+from .templates import weekreport
+
 clslog = ClslqLogger().log
 
 
@@ -72,13 +74,12 @@ class Report(object):
             task = df[df[u'分类'] != u'工作计划']
             plan = df[df[u'分类'] == u'工作计划']
 
-            with open(os.path.join(template, 'weekreport.html'), encoding='utf-8') as wr:
-                t = string.Template(wr.read())
-                f.write(t.safe_substitute({
-                    "title": title,
-                    "table": task.to_html(classes='tablestyle', index=False, na_rep=""),
-                    "plan": plan.to_html(classes='tablestyle', index=False, na_rep="")
-                }))
+            t = string.Template(weekreport.wr_template)
+            f.write(t.safe_substitute({
+                "title": title,
+                "table": task.to_html(classes='tablestyle', index=False, na_rep=""),
+                "plan": plan.to_html(classes='tablestyle', index=False, na_rep="")
+            }))
 
     def send_email(self, config, title):
         """Send report email to receivers defined in .clslq.json

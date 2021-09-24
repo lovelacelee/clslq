@@ -4,6 +4,7 @@ from setuptools import Command
 import shutil
 import os
 from clslq import version
+from distutils.sysconfig import get_python_lib
 
 version = version.CLSLQ_Version
 
@@ -289,8 +290,10 @@ setup(
     # Static files: config/service/pictures
     data_files=[
         # root directory such as: c:\python39\
-        # Use MANIFEST.in instead.
-        ('templates', ['clslq-template.json'])
+        # Use MANIFEST.in for egg/tar.gz.
+        # data_files is required for bdist_wheel
+
+        #('', ['clslq-template.json'])
         #('', ['conf/*.conf']),
         #('/usr/lib/systemd/system/', ['bin/*.service']),
         #('', ['clslq/pip.conf']),
@@ -298,7 +301,7 @@ setup(
     ],
     # Will be packed
     package_data={
-        'clslq': ['*.conf', '*.txt', '*.md'],
+        'clslq': ['*.conf', '*.txt', '*.md', '*.html'],
     },
     # Will not be packed
     exclude_package_data={'useless': ['*.in']},

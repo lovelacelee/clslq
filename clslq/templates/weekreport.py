@@ -1,3 +1,5 @@
+wr_template = """
+
 <html>
 
 <head>
@@ -60,3 +62,6 @@
 </body>
 
 </html>
+
+
+"""

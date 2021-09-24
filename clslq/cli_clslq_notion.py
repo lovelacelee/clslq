@@ -274,10 +274,67 @@ class WeekReport(Report):
         return self.df
 
 
-@click.option('--week',
-              '-w',
-              flag_value='month',
-              help='Generate week report form notion account data')
+def cli_week(client, clsconfig, excel, remove):
+    for i in client.search()['results']:
+        if i['object'] == 'database':
+            try:
+
+                database = client.databases.query(i['id'])
+                title = i['title']
+
+                for t in title:
+                    plain_text = t['plain_text'].strip().replace(
+                        ' → ', '~')
+                    plain_text_head = t['plain_text'][0:3]
+                    value = re.compile(r'^[0-9]+[0-9]$')
+                    # Handle valid report database only
+                    if plain_text_head == 'WRT':
+                        break
+                    if value.match(plain_text_head) == None:
+                        break
+                    enddate = datetime.datetime.fromisoformat(
+                        t['mention']['date']['end'])
+                    nowdate = datetime.datetime.now()
+                    # Use BT-Panel timer task to trigger
+                    if abs(enddate-nowdate) > datetime.timedelta(days=3):
+                        click.secho("End:{} now:{} weekday:{} delta:{} Week report expired".format(
+                            enddate, nowdate, nowdate.weekday(), abs(enddate-nowdate)), fg='green')
+                        break
+                    wrp = WeekReport(plain_text)
+                    wtitle = "{}({})".format(
+                        clsconfig.get('wr_title_prefix'), plain_text)
+
+                    if excel:
+                        wrp.excel_worksheet_dump(plain_text, database)
+                        df = pandas.read_excel(
+                            plain_text+'.xlsx', sheet_name='WR', header=1)
+                    else:
+                        df = wrp.pandas_df_fill(database)
+                    pandas.set_option('colheader_justify', 'center')
+                    df.style.hide_index()  # Hide index col
+
+                    wrp.render_html(wtitle, df)
+                    wrp.send_email(clsconfig, wtitle)
+                    if remove:
+                        wrp.remove_files()
+
+            except Exception as e:
+                clslog.error(e)
+                traceback.print_exc(e)
+def cli_month(client, clsconfig, remove):
+    
+    nowdate = datetime.datetime.now()
+    mtitle = "{}({}{:02})".format(
+        clsconfig.get('mr_title_prefix'), nowdate.year, nowdate.month)
+    click.secho("{}".format(mtitle), fg='blue')
+
+
+@click.option('--rtype',
+              '-t',
+              required=True,
+              default='week',
+              type=click.Choice(['week', 'month', 'all']),
+              help='Choose a type to generate report')
 @click.option('--excel',
               '-e',
               flag_value='GenerateExcel',
@@ -286,10 +343,6 @@ class WeekReport(Report):
               '-r',
               flag_value='RemoveFiles',
               help='Remove files or not')
-@click.option('--month',
-              '-m',
-              flag_value='month',
-              help='Generate month report form notion account data')
 @click.option('--config',
               '-c',
               type=click.Path(exists=True),
@@ -299,8 +352,9 @@ class WeekReport(Report):
     allow_extra_args=True,
     ignore_unknown_options=True,
 ),
-    help="Notion API beta.")
-def notion(week, month, config, excel, remove):
+    help="Notion Report Generator.")
+def notion(rtype, config, excel, remove):
+
     clsconfig = ClslqConfigUnique(file=config)
     if clsconfig.get('secrets_from') is None:
         click.secho(
@@ -310,58 +364,16 @@ def notion(week, month, config, excel, remove):
     client = Client(auth=clsconfig.get('secrets_from'),
                     notion_version="2021-08-16")
 
-    click.secho("Notion Accounts:", fg='yellow')
+    click.secho("Report type: {} Notion Accounts:".format(rtype), fg='yellow')
     for u in client.users.list()['results']:
         click.secho("{:8s} {}".format(u['name'], u['id']), fg='green')
-    if week:
-        click.secho("Week report search", fg='green')
-        for i in client.search()['results']:
-            if i['object'] == 'database':
-                try:
-
-                    database = client.databases.query(i['id'])
-                    title = i['title']
-
-                    for t in title:
-                        plain_text = t['plain_text'].strip().replace(
-                            ' → ', '~')
-                        plain_text_head = t['plain_text'][0:3]
-                        value = re.compile(r'^[0-9]+[0-9]$')
-                        # Handle valid report database only
-                        if plain_text_head == 'WRT':
-                            break
-                        if value.match(plain_text_head) == None:
-                            break
-                        enddate = datetime.datetime.fromisoformat(
-                            t['mention']['date']['end'])
-                        nowdate = datetime.datetime.now()
-                        # Use BT-Panel timer task to trigger
-                        if abs(enddate-nowdate) > datetime.timedelta(days=3):
-                            click.secho("End:{} now:{} weekday:{} delta:{} Week report expired".format(
-                                enddate, nowdate, nowdate.weekday(), abs(enddate-nowdate)), fg='green')
-                            break
-                        wrp = WeekReport(plain_text)
-                        wtitle = "{}({})".format(
-                            clsconfig.get('wr_title_prefix'), plain_text)
-
-                        if excel:
-                            wrp.excel_worksheet_dump(plain_text, database)
-                            df = pandas.read_excel(
-                                plain_text+'.xlsx', sheet_name='WR', header=1)
-                        else:
-                            df = wrp.pandas_df_fill(database)
-                        pandas.set_option('colheader_justify', 'center')
-                        df.style.hide_index()  # Hide index col
-
-                        wrp.render_html(wtitle, df)
-                        wrp.send_email(clsconfig, wtitle)
-                        if remove:
-                            wrp.remove_files()
-
-                except Exception as e:
-                    clslog.error(e)
-                    traceback.print_exc(e)
-
+    if 'week' == rtype:
+        click.secho("Week report generator", fg='green')
+        cli_week(client, clsconfig, excel, remove)
+    elif 'month' == rtype:
+        click.secho("Month report generator", fg='green')
+        cli_month(client, clsconfig, remove)
     else:
-        click.secho("Month report search", fg='green')
-        mtitle = config['mr_title_prefix']
+        click.secho("All reports generator", fg='green')
+        cli_week(client, clsconfig, excel, remove)
+        cli_month(client, clsconfig, remove)

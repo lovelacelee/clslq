@@ -289,6 +289,8 @@ setup(
     # Static files: config/service/pictures
     data_files=[
         # root directory such as: c:\python39\
+        # Use MANIFEST.in instead.
+        ('templates', ['clslq-template.json'])
         #('', ['conf/*.conf']),
         #('/usr/lib/systemd/system/', ['bin/*.service']),
         #('', ['clslq/pip.conf']),

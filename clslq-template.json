@@ -1,0 +1,16 @@
+{
+    "secrets_from": "secret_XXXXXXX",
+    "secrets_to": "secret_XXXXXXX",
+    "email" : {
+        "sender": {
+            "user": "xxxxxxxx@qq.com",
+            "pwd": "xxxxxxxx",
+            "smtpserver": "smtp.qq.com"
+        },
+        "receivers": [ 
+            "xxxxxxxx@qq.com"
+        ]
+    },
+    "wr_title_prefix": "XX的工作周报",
+    "mr_title_prefix": "XX的月度工作汇报"
+}

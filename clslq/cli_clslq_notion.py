@@ -65,10 +65,14 @@ class Report(object):
     def render_html(self, title, df):
         """Render html form template
 
+        Note that some of the email display methods only support inline-css style,
+        So here use table with inline-css by default.
+
         Args:
             title (str): Title of html and email subject
             df (object): Pandas DataFrame object
         """
+        clslog.info("Render html for {}".format(title))
         with open(self.wbname+'.html', encoding='utf-8', mode='w') as f:
             template = os.path.join(os.path.dirname(__file__), 'templates')
             task = df[df[u'分类'] != u'工作计划']
@@ -301,7 +305,7 @@ def cli_week(client, clsconfig, excel, remove, force):
                         if nowdate.weekday() != 5: # 0~6 means Monday~Sunday
                             clslog.warning("Today is not Saturday")
                             break
-                    if abs(enddate-nowdate) > datetime.timedelta(days=3):
+                    if abs(enddate-nowdate) > datetime.timedelta(days=5):
                         click.secho("End:{} now:{} weekday:{} delta:{} Week report expired".format(
                             enddate, nowdate, nowdate.weekday(), abs(enddate-nowdate)), fg='green')
                         break
@@ -319,7 +323,7 @@ def cli_week(client, clsconfig, excel, remove, force):
                     df.style.hide_index()  # Hide index col
 
                     wrp.render_html(wtitle, df)
-                    wrp.send_email(clsconfig, wtitle)
+                    #wrp.send_email(clsconfig, wtitle)
                     if remove:
                         wrp.remove_files()
 
@@ -348,7 +352,6 @@ def cli_month(client, clsconfig, remove, force):
 @click.option('--remove',
               '-r',
               flag_value='RemoveFiles',
-              default=True,
               help='Remove files or not')
 @click.option('--force',
               '-f',

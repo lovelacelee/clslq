@@ -79,7 +79,7 @@ wr_template = """
             <td style="padding: 10px; background-color: #FFF0D5">
               <span style="font-size: 16px; color: #F1A325">●</span>&nbsp;
               <span>
-                <span style="border-bottom: 1px rgb(204, 204, 204); position: relative;">周句周勉【Concept （概念）、Teach （教给别人）、Review （评价）、Simplify （简化）。不要妄自评论他人，不要受他人影响，不要揣度他人，凡事尽力而为！】</span>
+                <span style="border-bottom: 1px rgb(204, 204, 204); position: relative;">自省、总结、复盘</span>
               </span>
             </td>
           </tr>
@@ -91,5 +91,42 @@ wr_template = """
     </td>
   </tr>
 </tbody>
-
+<div>
+    <span>
+        <div>
+            <p class="MsoNormal"
+                style="margin: 0px 0cm; font-size: 10.5pt; font-family: Calibri, sans-serif; line-height: 23.8px; widows: 1; text-align: justify; background-color: rgb(225, 245, 255);">
+                <b style="font-size: 10.5pt;">
+                    <span lang="EN-US">&nbsp;</span>
+                </b>
+            </p>
+            <p class="MsoNormal"
+                style="margin: 0px 0cm; font-size: 10.5pt; font-family: Calibri, sans-serif; line-height: 23.8px; widows: 1; text-align: justify; background-color: rgb(225, 245, 255);">
+                <b style="font-size: 10.5pt;">
+                    <span lang="EN-US"
+                        style="font-family: Times New Roman, serif; color: rgb(0, 147, 221);">&nbsp;&nbsp;&nbsp;&nbsp;Best regards</span>
+                </b>
+            </p>
+            <p class="MsoNormal"
+                style="margin: 0px 0cm; font-family: Microsoft YaHei UI, Tahoma; line-height: 23.8px; widows: 1; text-align: justify; background-color: rgb(225, 245, 255);">
+                <b style="font-size: 10.5pt;">
+                    <span lang="EN-US" style="font-size: 12pt;">
+                        <font face="黑体">&nbsp;&nbsp;&nbsp;&nbsp;$user</font>
+                        <font face="Calibri, sans-serif">&nbsp;</font>
+                    </span>
+                </b>
+                <b style="font-family: Calibri, sans-serif;">
+                    <span lang="EN-US" style="font-size: 14pt; font-family: 黑体;">&nbsp;</span>
+                    <span lang="EN-US" style="font-family: 黑体; font-size: 12px;">$department</span>
+                </b>
+            </p>
+            <p class="MsoNormal"
+                style="margin: 0px 0cm; font-size: 10.5pt; font-family: Calibri, sans-serif; line-height: 23.8px; widows: 1; text-align: justify; background-color: rgb(225, 245, 255);">
+                <b style="font-size: 10.5pt;">
+                    <span lang="EN-US">&nbsp;</span>
+                </b>
+            </p>
+        </div>
+    </span>
+</div>
 """

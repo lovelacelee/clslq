@@ -64,7 +64,7 @@ class Report(object):
                                      bottom=Side(border_style='thin', color='000000'))
         self.wbname = wbname
 
-    def render_html(self, title, database):
+    def render_html(self, clsconfig, title, database):
         """Render html form template
 
         Note that some of the email display methods only support inline-css style,
@@ -135,6 +135,8 @@ class Report(object):
                 "title": title,
                 "table": table,
                 "plan": plan,
+                "user": clsconfig.get('user'),
+                "department": clsconfig.get('department'),
                 "summarize": summary
             }))
 
@@ -398,7 +400,7 @@ def cli_week(client, clsconfig, excel, remove, force, send):
                     pandas.set_option('colheader_justify', 'center')
                     df.style.hide_index()  # Hide index col
 
-                    wrp.render_html(wtitle, database)
+                    wrp.render_html(clsconfig, wtitle, database)
                     if send:
                         wrp.send_email(clsconfig, wtitle)
                     if remove:

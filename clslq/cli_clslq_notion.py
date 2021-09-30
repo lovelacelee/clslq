@@ -9,6 +9,8 @@ Usage: clslq notion [OPTIONS]
 
 [pandas](https://www.pypandas.cn/)
 
+Notion template on https://airy-skiff-4d0.notion.site/04143158def3413fb58e7dae4b2d9aff
+
 '''
 
 
@@ -62,11 +64,85 @@ class Report(object):
                                      bottom=Side(border_style='thin', color='000000'))
         self.wbname = wbname
 
-    def render_html(self, title, df):
+    def render_html(self, title, database):
         """Render html form template
 
         Note that some of the email display methods only support inline-css style,
-        So here use table with inline-css by default.
+        This method support inline-css for table headers and rows.
+
+        Args:
+            title (str): Title of html and email subject
+            df (object): Pandas DataFrame object
+        """
+        clslog.info("Render[Inline-CSS] html for {}".format(title))
+        with open(self.wbname+'.html', encoding='utf-8', mode='w') as f:
+            table = str('')
+            summary = str('')
+            plan = str('')
+            i = 0
+            j = 0
+            for node in database['results']:
+                item = node['properties']
+
+                task_paln_template = """
+                    <tr height="19" style="height:14.0pt;background: {color}">
+                        <td style="border: 0.5pt solid #cfcfcf; vertical-align: middle; text-align: center;">{type}</td>
+                        <td style="border: 0.5pt solid #cfcfcf;">{title}</td>
+                        <td style="border: 0.5pt solid #cfcfcf; vertical-align: middle; text-align: center;">{state}</td>
+                        <td style="border: 0.5pt solid #cfcfcf;">{problem}</td>
+                        <td style="border: 0.5pt solid #cfcfcf;">{solve}</td>
+                    </tr>
+                """
+                summary_template = """
+                    <tr>
+                        <td style="padding: 10px; background-color: rgba(204, 204, 204, 0.1)">
+                        <span style="font-size: 16px; color: #81e4c3">●</span>&nbsp;
+                        <span>
+                            <span style="border-bottom: 1px dashed rgb(204, 204, 204); position: relative;">{summary}</span>
+                        </span>
+                        </td>
+                    </tr>
+                """
+                def bgcolor(i): return '#F7F7F7' if i % 2 == 0 else '#fff'
+                if self.content_parse_type(item, 0) == u'工作计划':
+                    plan += task_paln_template.format(**{
+                        'type': self.content_parse_type(item, 0),
+                        'title': self.content_parse_title(item),
+                        'state': self.content_parse_state(item, 0),
+                        'problem': self.content_parse_richtext(item, u'问题'),
+                        'solve': self.content_parse_richtext(item, u'解决方法'),
+                        'color': bgcolor(i)
+                    })
+                    i = i + 1
+                else:
+                    table += task_paln_template.format(**{
+                        'type': self.content_parse_type(item, 0),
+                        'title': self.content_parse_title(item),
+                        'state': self.content_parse_state(item, 0),
+                        'problem': self.content_parse_richtext(item, u'问题'),
+                        'solve': self.content_parse_richtext(item, u'解决方法'),
+                        'color': bgcolor(j)
+                    })
+                    j = j + 1
+                summarize_item = self.content_parse_richtext(item, u'评审、复盘、总结')
+                if len(summarize_item):
+                    summary += summary_template.format(**{
+                        'summary': summarize_item
+                    })
+            html = string.Template(weekreport.wr_template)
+
+            f.write(html.safe_substitute({
+                "title": title,
+                "table": table,
+                "plan": plan,
+                "summarize": summary
+            }))
+
+    def render_html_without_inline_css(self, title, df):
+        """Render html form template, use pandas
+
+        Note that some of the email display methods only support inline-css style,
+        This method does not use any inline-css for table headers and rows.
 
         Args:
             title (str): Title of html and email subject
@@ -74,7 +150,7 @@ class Report(object):
         """
         clslog.info("Render html for {}".format(title))
         with open(self.wbname+'.html', encoding='utf-8', mode='w') as f:
-            template = os.path.join(os.path.dirname(__file__), 'templates')
+
             task = df[df[u'分类'] != u'工作计划']
             plan = df[df[u'分类'] == u'工作计划']
 
@@ -279,7 +355,7 @@ class WeekReport(Report):
         return self.df
 
 
-def cli_week(client, clsconfig, excel, remove, force):
+def cli_week(client, clsconfig, excel, remove, force, send):
     for i in client.search()['results']:
         if i['object'] == 'database':
             try:
@@ -302,7 +378,7 @@ def cli_week(client, clsconfig, excel, remove, force):
                     nowdate = datetime.datetime.now()
                     # Use BT-Panel timer task to trigger
                     if not force:
-                        if nowdate.weekday() != 5: # 0~6 means Monday~Sunday
+                        if nowdate.weekday() != 5:  # 0~6 means Monday~Sunday
                             clslog.warning("Today is not Saturday")
                             break
                     if abs(enddate-nowdate) > datetime.timedelta(days=5):
@@ -322,16 +398,19 @@ def cli_week(client, clsconfig, excel, remove, force):
                     pandas.set_option('colheader_justify', 'center')
                     df.style.hide_index()  # Hide index col
 
-                    wrp.render_html(wtitle, df)
-                    #wrp.send_email(clsconfig, wtitle)
+                    wrp.render_html(wtitle, database)
+                    if send:
+                        wrp.send_email(clsconfig, wtitle)
                     if remove:
                         wrp.remove_files()
 
             except Exception as e:
                 clslog.error(e)
                 traceback.print_exc(e)
+
+
 def cli_month(client, clsconfig, remove, force):
-    
+
     nowdate = datetime.datetime.now()
     mtitle = "{}({}{:02})".format(
         clsconfig.get('mr_title_prefix'), nowdate.year, nowdate.month)
@@ -358,6 +437,11 @@ def cli_month(client, clsconfig, remove, force):
               flag_value='force',
               default=False,
               help='Force generate right now, otherwise limited by valid datetime')
+@click.option('--send',
+              '-s',
+              flag_value='send',
+              default=False,
+              help='Send email or not')
 @click.option('--config',
               '-c',
               type=click.Path(exists=True),
@@ -368,7 +452,7 @@ def cli_month(client, clsconfig, remove, force):
     ignore_unknown_options=True,
 ),
     help="Notion Report Generator.")
-def notion(rtype, config, excel, remove, force):
+def notion(rtype, config, excel, remove, force, send):
 
     clsconfig = ClslqConfigUnique(file=config)
     if clsconfig.get('secrets_from') is None:
@@ -384,11 +468,11 @@ def notion(rtype, config, excel, remove, force):
         click.secho("{:8s} {}".format(u['name'], u['id']), fg='green')
     if 'week' == rtype:
         click.secho("Week report generator", fg='green')
-        cli_week(client, clsconfig, excel, remove, force)
+        cli_week(client, clsconfig, excel, remove, force, send)
     elif 'month' == rtype:
         click.secho("Month report generator", fg='green')
-        cli_month(client, clsconfig, remove, force)
+        cli_month(client, clsconfig, remove, force, send)
     else:
         click.secho("All reports generator", fg='green')
-        cli_week(client, clsconfig, excel, remove, force)
-        cli_month(client, clsconfig, remove, force)
+        cli_week(client, clsconfig, excel, remove, force, send)
+        cli_month(client, clsconfig, remove, force, send)

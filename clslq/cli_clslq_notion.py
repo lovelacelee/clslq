@@ -13,7 +13,6 @@ Notion template on https://airy-skiff-4d0.notion.site/04143158def3413fb58e7dae4b
 
 '''
 
-
 import click
 import datetime
 import string
@@ -42,6 +41,7 @@ from .clslq_log import ClslqLogger
 from notion_client import Client
 
 from .templates import weekreport
+from .templates import monthreport
 
 clslog = ClslqLogger().log
 
@@ -50,95 +50,20 @@ class Report(object):
     """Base class of Report
 
     Args:
-        object (wbname): Workbook name
+        object (wbname): Workbook name, generated document file name
     """
-
     def __init__(self, wbname):
         self.wb = Workbook()
         self.sht = self.wb.active
-        self.default_border = Border(left=Side(border_style='thin', color='000000'),
+        self.default_border = Border(left=Side(border_style='thin',
+                                               color='000000'),
                                      right=Side(border_style='thin',
                                                 color='000000'),
                                      top=Side(border_style='thin',
                                               color='000000'),
-                                     bottom=Side(border_style='thin', color='000000'))
+                                     bottom=Side(border_style='thin',
+                                                 color='000000'))
         self.wbname = wbname
-
-    def render_html(self, clsconfig, title, database):
-        """Render html form template
-
-        Note that some of the email display methods only support inline-css style,
-        This method support inline-css for table headers and rows.
-
-        Args:
-            title (str): Title of html and email subject
-            df (object): Pandas DataFrame object
-        """
-        clslog.info("Render[Inline-CSS] html for {}".format(title))
-        with open(self.wbname+'.html', encoding='utf-8', mode='w') as f:
-            table = str('')
-            summary = str('')
-            plan = str('')
-            i = 0
-            j = 0
-            for node in database['results']:
-                item = node['properties']
-
-                task_paln_template = """
-                    <tr height="19" style="height:14.0pt;background: {color}">
-                        <td style="border: 0.5pt solid #cfcfcf; vertical-align: middle; text-align: center;">{type}</td>
-                        <td style="border: 0.5pt solid #cfcfcf;">{title}</td>
-                        <td style="border: 0.5pt solid #cfcfcf; vertical-align: middle; text-align: center;">{state}</td>
-                        <td style="border: 0.5pt solid #cfcfcf;">{problem}</td>
-                        <td style="border: 0.5pt solid #cfcfcf;">{solve}</td>
-                    </tr>
-                """
-                summary_template = """
-                    <tr>
-                        <td style="padding: 10px; background-color: rgba(204, 204, 204, 0.1)">
-                        <span style="font-size: 16px; color: #81e4c3">●</span>&nbsp;
-                        <span>
-                            <span style="border-bottom: 1px dashed rgb(204, 204, 204); position: relative;">{summary}</span>
-                        </span>
-                        </td>
-                    </tr>
-                """
-                def bgcolor(i): return '#F7F7F7' if i % 2 == 0 else '#fff'
-                if self.content_parse_type(item, 0) == u'工作计划':
-                    plan += task_paln_template.format(**{
-                        'type': self.content_parse_type(item, 0),
-                        'title': self.content_parse_title(item),
-                        'state': self.content_parse_state(item, 0),
-                        'problem': self.content_parse_richtext(item, u'问题'),
-                        'solve': self.content_parse_richtext(item, u'解决方法'),
-                        'color': bgcolor(i)
-                    })
-                    i = i + 1
-                else:
-                    table += task_paln_template.format(**{
-                        'type': self.content_parse_type(item, 0),
-                        'title': self.content_parse_title(item),
-                        'state': self.content_parse_state(item, 0),
-                        'problem': self.content_parse_richtext(item, u'问题'),
-                        'solve': self.content_parse_richtext(item, u'解决方法'),
-                        'color': bgcolor(j)
-                    })
-                    j = j + 1
-                summarize_item = self.content_parse_richtext(item, u'评审、复盘、总结')
-                if len(summarize_item):
-                    summary += summary_template.format(**{
-                        'summary': summarize_item
-                    })
-            html = string.Template(weekreport.wr_template)
-
-            f.write(html.safe_substitute({
-                "title": title,
-                "table": table,
-                "plan": plan,
-                "user": clsconfig.get('user'),
-                "department": clsconfig.get('department'),
-                "summarize": summary
-            }))
 
     def render_html_without_inline_css(self, title, df):
         """Render html form template, use pandas
@@ -146,22 +71,28 @@ class Report(object):
         Note that some of the email display methods only support inline-css style,
         This method does not use any inline-css for table headers and rows.
 
+        Deprecated
+
         Args:
             title (str): Title of html and email subject
             df (object): Pandas DataFrame object
         """
         clslog.info("Render html for {}".format(title))
-        with open(self.wbname+'.html', encoding='utf-8', mode='w') as f:
+        with open(self.wbname + '.html', encoding='utf-8', mode='w') as f:
 
             task = df[df[u'分类'] != u'工作计划']
             plan = df[df[u'分类'] == u'工作计划']
 
             t = string.Template(weekreport.wr_template)
-            f.write(t.safe_substitute({
-                "title": title,
-                "table": task.to_html(classes='tablestyle', index=False, na_rep=""),
-                "plan": plan.to_html(classes='tablestyle', index=False, na_rep="")
-            }))
+            f.write(
+                t.safe_substitute({
+                    "title":
+                    title,
+                    "table":
+                    task.to_html(classes='tablestyle', index=False, na_rep=""),
+                    "plan":
+                    plan.to_html(classes='tablestyle', index=False, na_rep="")
+                }))
 
     def send_email(self, config, title):
         """Send report email to receivers defined in .clslq.json
@@ -181,7 +112,7 @@ class Report(object):
         msg['From'] = "{}".format(user)
         msg['To'] = ",".join(receivers)
         msg['Subject'] = Header(title, 'utf-8')
-        with open(self.wbname+'.html', "r", encoding='utf-8') as f:
+        with open(self.wbname + '.html', "r", encoding='utf-8') as f:
             msg.attach(MIMEText(f.read(), 'html', 'utf-8'))
         try:
             smtp = smtplib.SMTP()
@@ -196,10 +127,10 @@ class Report(object):
 
     def remove_files(self):
         """Removes all generated files"""
-        if os.path.exists(self.wbname+'.html'):
-            os.remove(self.wbname+'.html')
-        if os.path.exists(self.wbname+'.xlsx'):
-            os.remove(self.wbname+'.xlsx')
+        if os.path.exists(self.wbname + '.html'):
+            os.remove(self.wbname + '.html')
+        if os.path.exists(self.wbname + '.xlsx'):
+            os.remove(self.wbname + '.xlsx')
 
 
 class WeekReport(Report):
@@ -211,11 +142,10 @@ class WeekReport(Report):
         """
         self.sht.merge_cells('A1:F1')
 
-        self.sht['A1'] = u"本周工作情况"+head.replace('-', "")
-        self.sht['A1'].alignment = Alignment(
-            horizontal='center', vertical='center')
-        self.sht['A1'].font = Font(
-            color=colors.BLACK, b=True, size=14)
+        self.sht['A1'] = u"本周工作情况" + head.replace('-', "")
+        self.sht['A1'].alignment = Alignment(horizontal='center',
+                                             vertical='center')
+        self.sht['A1'].font = Font(color=colors.BLACK, b=True, size=14)
         self.sht['A1'].fill = PatternFill("solid", fgColor="00FF8080")
         self.sht.row_dimensions[1].height = 20
 
@@ -229,8 +159,9 @@ class WeekReport(Report):
         self.sht['E2'] = u"解决"
         self.sht['F2'] = u"评审、复盘、总结"
         for col in range(1, 7):
-            self.sht.cell(column=col, row=2).font = Font(
-                name=u'微软雅黑', bold=True, size=12)
+            self.sht.cell(column=col, row=2).font = Font(name=u'微软雅黑',
+                                                         bold=True,
+                                                         size=12)
 
     def content_parse_title(self, item):
         result = None
@@ -296,24 +227,27 @@ class WeekReport(Report):
             return result.replace('\n', ' ')
 
     def excel_worksheet_fill(self, item, row):
-        self.sht['A'+str(row)] = self.content_parse_type(item, row)
-        self.sht['B'+str(row)] = self.content_parse_title(item)
-        self.sht['C'+str(row)] = self.content_parse_state(item, row)
-        self.sht['D'+str(row)] = self.content_parse_richtext(item, u'问题')
-        self.sht['E'+str(row)] = self.content_parse_richtext(item, u'解决方法')
-        self.sht['F'+str(row)] = self.content_parse_richtext(item, u'评审、复盘、总结')
+        self.sht['A' + str(row)] = self.content_parse_type(item, row)
+        self.sht['B' + str(row)] = self.content_parse_title(item)
+        self.sht['C' + str(row)] = self.content_parse_state(item, row)
+        self.sht['D' + str(row)] = self.content_parse_richtext(item, u'问题')
+        self.sht['E' + str(row)] = self.content_parse_richtext(item, u'解决方法')
+        self.sht['F' + str(row)] = self.content_parse_richtext(
+            item, u'评审、复盘、总结')
 
         for c in ('A', 'C'):
             self.sht.column_dimensions[c].width = 10
             for cell in self.sht[c]:
-                cell.alignment = Alignment(
-                    horizontal='center', vertical='center', wrap_text=True)
+                cell.alignment = Alignment(horizontal='center',
+                                           vertical='center',
+                                           wrap_text=True)
                 cell.border = self.default_border
         for c in ('B', 'F', 'D', 'E'):
             self.sht.column_dimensions[c].width = 30
             for cell in self.sht[c]:
-                cell.alignment = Alignment(
-                    horizontal='center', vertical='center', wrap_text=True)
+                cell.alignment = Alignment(horizontal='center',
+                                           vertical='center',
+                                           wrap_text=True)
                 cell.border = self.default_border
 
     def excel_worksheet_dump(self, wbname, database):
@@ -327,7 +261,7 @@ class WeekReport(Report):
             item = node['properties']
             self.excel_worksheet_fill(item, row)
             row = row + 1
-        self.wb.save(filename=wbname+'.xlsx')
+        self.wb.save(filename=wbname + '.xlsx')
         self.wb.close()
 
     def pandas_df_fill(self, database):
@@ -351,13 +285,446 @@ class WeekReport(Report):
             u'进展': pandas.Series(_state, index=range(len(_state))),
             u'问题': pandas.Series(_problem, index=range(len(_problem))),
             u'解决': pandas.Series(_solve, index=range(len(_solve))),
-            u'评审复盘总结备注': pandas.Series(_conclusion, index=range(len(_conclusion)))
+            u'评审复盘总结备注': pandas.Series(_conclusion,
+                                       index=range(len(_conclusion)))
         }
         self.df = pandas.DataFrame(data)
         return self.df
 
+    def render_html(self, clsconfig, title, database):
+        """Render html form template
+
+        Note that some of the email display methods only support inline-css style,
+        This method support inline-css for table headers and rows.
+
+        Args:
+            title (str): Title of html and email subject
+            df (object): Pandas DataFrame object
+        """
+        clslog.info("Render[Inline-CSS] html for {}".format(title))
+        with open(self.wbname + '.html', encoding='utf-8', mode='w') as f:
+            table = str('')
+            summary = str('')
+            plan = str('')
+            i = 0
+            j = 0
+
+            task_paln_template = """
+                <tr height="19" style="height:14.0pt;background: {color}">
+                    <td style="border: 0.5pt solid #cfcfcf; vertical-align: middle; text-align: center;">{type}</td>
+                    <td style="border: 0.5pt solid #cfcfcf;">{title}</td>
+                    <td style="border: 0.5pt solid #cfcfcf; vertical-align: middle; text-align: center;">{state}</td>
+                    <td style="border: 0.5pt solid #cfcfcf;">{problem}</td>
+                    <td style="border: 0.5pt solid #cfcfcf;">{solve}</td>
+                </tr>
+            """
+            summary_template = """
+                <tr>
+                    <td style="padding: 10px; background-color: rgba(204, 204, 204, 0.1)">
+                    <span style="font-size: 16px; color: #81e4c3">●</span>&nbsp;
+                    <span>
+                        <span style="border-bottom: 1px dashed rgb(204, 204, 204); position: relative;">{summary}</span>
+                    </span>
+                    </td>
+                </tr>
+            """
+            for node in database['results']:
+                item = node['properties']
+
+                def bgcolor(i):
+                    return '#F7F7F7' if i % 2 == 0 else '#fff'
+
+                if self.content_parse_type(item, 0) == u'工作计划':
+                    plan += task_paln_template.format(
+                        **{
+                            'type': self.content_parse_type(item, 0),
+                            'title': self.content_parse_title(item),
+                            'state': self.content_parse_state(item, 0),
+                            'problem': self.content_parse_richtext(
+                                item, u'问题'),
+                            'solve': self.content_parse_richtext(
+                                item, u'解决方法'),
+                            'color': bgcolor(i)
+                        })
+                    i = i + 1
+                else:
+                    table += task_paln_template.format(
+                        **{
+                            'type': self.content_parse_type(item, 0),
+                            'title': self.content_parse_title(item),
+                            'state': self.content_parse_state(item, 0),
+                            'problem': self.content_parse_richtext(
+                                item, u'问题'),
+                            'solve': self.content_parse_richtext(
+                                item, u'解决方法'),
+                            'color': bgcolor(j)
+                        })
+                    j = j + 1
+                summarize_item = self.content_parse_richtext(item, u'评审、复盘、总结')
+                if len(summarize_item):
+                    summary += summary_template.format(
+                        **{'summary': summarize_item})
+            html = string.Template(weekreport.wr_template)
+
+            f.write(
+                html.safe_substitute({
+                    "title": title,
+                    "table": table,
+                    "plan": plan,
+                    "user": clsconfig.get('user'),
+                    "department": clsconfig.get('department'),
+                    "summarize": summary
+                }))
+
+
+class MonthReport(Report):
+    def init(self, title, user, department):
+        self._title = title
+
+        self._book = str('')
+        self._book_content = str('')
+        self._study_list = str('')
+        self._main_target = str('')
+        self._team_target = str('')
+        self._technology = str('')
+        self._patent = str('')
+        self._review = str('')
+        self._tech_issues = str('')
+        self._maintainance = str('')
+        self._duties = str('')
+        self._programming_tasks = str('')
+        self._reading_share = str('')
+        self._directions = str('')
+
+        self._user = user
+        self._department = department
+
+    def content_parse_title(self, item):
+        result = None
+        try:
+            title = item[u'名称']['title']
+            for i in title:
+                result = i['plain_text']
+        except Exception as e:
+            pass
+        finally:
+            return result
+
+    def content_parse_state(self, item):
+        result = ''
+        try:
+            for i in item[u'状态']['multi_select']:
+                result = "{} {}".format(result, i['name'])
+        except Exception as e:
+            pass
+        finally:
+            return result
+
+    def content_parse_type(self, item):
+        result = ''
+        try:
+            result = item[u'分类']['select']['name']
+            if result == u'工作计划':
+                return ''
+        except Exception as e:
+            pass
+        finally:
+            return result
+
+    def content_parse_richtext(self, item, text):
+        """Parse Notion Column content
+
+        Args:
+            item (dict): Notion Column content
+            text (str): Unicode string means column title
+
+        Returns:
+            str: Cell result
+        """
+        result = ''
+        try:
+            title = item[text]['rich_text']
+            for i in title:
+                result = i['plain_text']
+        except Exception as e:
+            pass
+        finally:
+            return result.replace('\n', ' ')
+
+    def render_reading_books(self, database):
+        self._book = "活法"
+
+    def render_reading_notes(self, database):
+        self._book_content = "<p>读书笔记-=asdfasdfasdf东奔西走asdfa</p>"
+
+    def render_study_note(self, database):
+        self._study_list = "232434234"
+
+    def render_maintarget(self, database):
+        self._main_target = "分解公司业务目标"
+
+    def render_teamtarget(self, database):
+        self._team_target = "团队成员的能力匹配"
+
+    def render_technology(self, database):
+        _template = """
+            <p>{content}&nbsp;<span style="color:red;">{state}</span>&nbsp;<span style="color:red;">{problem}</span>&nbsp;<span style="color:red;">{solve}</span></p>
+        """
+
+        for node in database['results']:
+            item = node['properties']
+            _type = self.content_parse_type(item)
+            if _type == u'方案输出' or _type == u'技术预研':
+                self._technology += _template.format(
+                    **{
+                        'content': self.content_parse_title(item),
+                        'state': self.content_parse_state(item),
+                        'problem': self.content_parse_richtext(item, u'问题'),
+                        'solve': self.content_parse_richtext(item, u'解决方法')
+                    })
+
+    def render_review(self, database):
+        _template = """
+            <p>{content}&nbsp;<span style="color:red;">{state}</span>&nbsp;<span style="color:red;">{problem}</span>&nbsp;<span style="color:red;">{solve}</span></p>
+        """
+
+        for node in database['results']:
+            item = node['properties']
+            _type = self.content_parse_type(item)
+            if _type == u'代码评审' or _type == u'配置管理':
+                self._review += _template.format(
+                    **{
+                        'content': self.content_parse_title(item),
+                        'state': self.content_parse_state(item),
+                        'problem': self.content_parse_richtext(item, u'问题'),
+                        'solve': self.content_parse_richtext(item, u'解决方法')
+                    })
+
+    def render_maintainance(self, database):
+        _template = """
+            <p>{content}&nbsp;<span style="color:red;">{state}</span>&nbsp;<span style="color:red;">{problem}</span>&nbsp;<span style="color:red;">{solve}</span></p>
+        """
+
+        for node in database['results']:
+            item = node['properties']
+            _type = self.content_parse_type(item)
+            if _type == u'项目运维' or _type == u'IT运维':
+                self._maintainance += _template.format(
+                    **{
+                        'content': self.content_parse_title(item),
+                        'state': self.content_parse_state(item),
+                        'problem': self.content_parse_richtext(item, u'问题'),
+                        'solve': self.content_parse_richtext(item, u'解决方法')
+                    })
+
+    def render_patent(self, database):
+        _template = """
+            <p>{content}&nbsp;<span style="color:red;">{state}</span>&nbsp;<span style="color:red;">{problem}</span>&nbsp;<span style="color:red;">{solve}</span></p>
+        """
+
+        for node in database['results']:
+            item = node['properties']
+            _type = self.content_parse_type(item)
+            if _type == u'知识产权建设':
+                self._patent += _template.format(
+                    **{
+                        'content': self.content_parse_title(item),
+                        'state': self.content_parse_state(item),
+                        'problem': self.content_parse_richtext(item, u'问题'),
+                        'solve': self.content_parse_richtext(item, u'解决方法')
+                    })
+
+    def render_techissues(self, database):
+        _template = """
+            <p>{content}&nbsp;<span style="color:red;">{state}</span>&nbsp;<span style="color:red;">{problem}</span>&nbsp;<span style="color:red;">{solve}</span></p>
+        """
+
+        for node in database['results']:
+            item = node['properties']
+            _type = self.content_parse_type(item)
+            if _type == u'项目支撑' or _type == u'技术问题指导':
+                self._tech_issues += _template.format(
+                    **{
+                        'content': self.content_parse_title(item),
+                        'state': self.content_parse_state(item),
+                        'problem': self.content_parse_richtext(item, u'问题'),
+                        'solve': self.content_parse_richtext(item, u'解决方法')
+                    })
+
+    def render_duties(self, database):
+        _template = """
+            <p>{content}&nbsp;<span style="color:red;">{state}</span>&nbsp;<span style="color:red;">{problem}</span>&nbsp;<span style="color:red;">{solve}</span></p>
+        """
+
+        for node in database['results']:
+            item = node['properties']
+            _type = self.content_parse_type(item)
+            if _type == u'技术管理' or _type == u'内部支撑':
+                self._duties += _template.format(
+                    **{
+                        'content': self.content_parse_title(item),
+                        'state': self.content_parse_state(item),
+                        'problem': self.content_parse_richtext(item, u'问题'),
+                        'solve': self.content_parse_richtext(item, u'解决方法')
+                    })
+
+    def render_programming_work(self, database):
+        _template = """
+            <p>{content}&nbsp;<span style="color:red;">{state}</span>&nbsp;<span style="color:red;">{problem}</span>&nbsp;<span style="color:red;">{solve}</span></p>
+        """
+
+        for node in database['results']:
+            item = node['properties']
+            _type = self.content_parse_type(item)
+            if _type == u'产品开发':
+                self._programming_tasks += _template.format(
+                    **{
+                        'content': self.content_parse_title(item),
+                        'state': self.content_parse_state(item),
+                        'problem': self.content_parse_richtext(item, u'问题'),
+                        'solve': self.content_parse_richtext(item, u'解决方法')
+                    })
+
+    def render_reading_share(self, database):
+        _template = """
+            <p>{content}&nbsp;<span style="color:red;">{state}</span>&nbsp;<span style="color:red;">{problem}</span>&nbsp;<span style="color:red;">{solve}</span></p>
+        """
+
+        for node in database['results']:
+            item = node['properties']
+            _type = self.content_parse_type(item)
+            if _type == u'总结输出' or _type == u'会议记录' or _type == u'复盘分享':
+                self._reading_share += _template.format(
+                    **{
+                        'content': self.content_parse_title(item),
+                        'state': self.content_parse_state(item),
+                        'problem': self.content_parse_richtext(item, u'问题'),
+                        'solve': self.content_parse_richtext(item, u'解决方法')
+                    })
+
+    def render_directions(self, database):
+        _template = """
+            <p>{content}&nbsp;<span style="color:red;">{state}</span>&nbsp;<span style="color:red;">{problem}</span>&nbsp;<span style="color:red;">{solve}</span></p>
+        """
+
+        for node in database['results']:
+            item = node['properties']
+            _type = self.content_parse_type(item)
+            if _type == u'技术分享' or _type == u'好书分享' or _type == u'好文章分享' or _type == u'工作指导':
+                self._directions += _template.format(
+                    **{
+                        'content': self.content_parse_title(item),
+                        'state': self.content_parse_state(item),
+                        'problem': self.content_parse_richtext(item, u'问题'),
+                        'solve': self.content_parse_richtext(item, u'解决方法')
+                    })
+
+    def parse_week_tasks(self, database):
+        clslog.info("解析当月工作任务")
+        self.render_maintarget(database)
+        self.render_teamtarget(database)
+        self.render_technology(database)
+        self.render_patent(database)
+        self.render_review(database)
+        self.render_duties(database)
+        self.render_techissues(database)
+        self.render_maintainance(database)
+        self.render_programming_work(database)
+        self.render_reading_share(database)
+        self.render_directions(database)
+
+    def render_itor_database(self, title, database, force):
+        try:
+            for t in title:
+                # Use BT-Panel timer task to trigger
+                if not force:
+                    if nowdate.day() != 1:
+                        clslog.warning(
+                            "Month report will not trigger except the day 1")
+                        break
+
+                plain_text = t['plain_text'].strip().replace(' → ', '~')
+                """Reading list"""
+                if plain_text == u"读书如斯":
+                    self.render_reading_books(database)
+                    self.render_reading_notes(database)
+                    break
+                if plain_text == u"网络万象":
+                    self.render_study_note(database)
+                    break
+                """Week report parse"""
+                plain_text_head = t['plain_text'][0:3]  # Filter for week tasks
+                value = re.compile(r'^[0-9]+[0-9]$')
+                if t['type'] == 'mention':
+                    enddate = datetime.datetime.fromisoformat(
+                        t['mention']['date']['end'])
+                    nowdate = datetime.datetime.now()
+                    """Skip useless databases
+                    """
+                    if plain_text_head == 'WRT':
+                        break
+                    if value.match(plain_text_head):
+                        if abs(enddate -
+                               nowdate) > datetime.timedelta(days=30):
+                            click.secho(
+                                "End:{} now:{} weekday:{} delta:{} Week report expired"
+                                .format(enddate, nowdate, nowdate.weekday(),
+                                        abs(enddate - nowdate)),
+                                fg='green')
+                            break
+                        self.parse_week_tasks(database)
+        except Exception as e:
+            clslog.critical(e)
+            traceback.print_exc(e)
+
+    def render_html(self, title):
+        """Render html form template
+
+        Note that some of the email display methods only support inline-css style,
+        This method support inline-css for table headers and rows.
+
+        Args:
+            title (str): Title of html and email subject
+        """
+        clslog.info("Render[Inline-CSS] html for {}".format(title))
+
+        with open(self.wbname + '.html', encoding='utf-8', mode='w') as f:
+
+            html = string.Template(monthreport.mr_template)
+
+            f.write(
+                html.safe_substitute({
+                    "title": self._title,
+                    "book": self._book,
+                    "book_content": self._book_content,
+                    "study": self._study_list,
+                    "main_target": self._main_target,
+                    "team_target": self._team_target,
+                    "technology": self._technology,
+                    "patent": self._patent,
+                    "review": self._review,
+                    "technology_issues": self._tech_issues,
+                    "maintainance": self._maintainance,
+                    "duties": self._duties,
+                    "programming_work": self._programming_tasks,
+                    "reading_share": self._reading_share,
+                    "direction": self._directions,
+                    "user": self._user,
+                    "department": self._department
+                }))
+
 
 def cli_week(client, clsconfig, excel, remove, force, send):
+    """Generate work report every week
+
+    Args:
+        client (object): Notion client instance
+        clsconfig (dict): Config instance of .clslq.json
+        excel (bool): Support dump excel or not
+        remove (bool): Remove dumped files or not
+        force (bool): Force generate or not
+        send (bool): Send email or not
+    """
     for i in client.search()['results']:
         if i['object'] == 'database':
             try:
@@ -366,8 +733,7 @@ def cli_week(client, clsconfig, excel, remove, force, send):
                 title = i['title']
 
                 for t in title:
-                    plain_text = t['plain_text'].strip().replace(
-                        ' → ', '~')
+                    plain_text = t['plain_text'].strip().replace(' → ', '~')
                     plain_text_head = t['plain_text'][0:3]
                     value = re.compile(r'^[0-9]+[0-9]$')
                     # Handle valid report database only
@@ -383,18 +749,22 @@ def cli_week(client, clsconfig, excel, remove, force, send):
                         if nowdate.weekday() != 5:  # 0~6 means Monday~Sunday
                             clslog.warning("Today is not Saturday")
                             break
-                    if abs(enddate-nowdate) > datetime.timedelta(days=5):
-                        click.secho("End:{} now:{} weekday:{} delta:{} Week report expired".format(
-                            enddate, nowdate, nowdate.weekday(), abs(enddate-nowdate)), fg='green')
+                    if abs(enddate - nowdate) > datetime.timedelta(days=5):
+                        click.secho(
+                            "End:{} now:{} weekday:{} delta:{} Week report expired"
+                            .format(enddate, nowdate, nowdate.weekday(),
+                                    abs(enddate - nowdate)),
+                            fg='green')
                         break
                     wrp = WeekReport(plain_text)
-                    wtitle = "{}({})".format(
-                        clsconfig.get('wr_title_prefix'), plain_text)
+                    wtitle = "{}({})".format(clsconfig.get('wr_title_prefix'),
+                                             plain_text)
 
                     if excel:
                         wrp.excel_worksheet_dump(plain_text, database)
-                        df = pandas.read_excel(
-                            plain_text+'.xlsx', sheet_name='WR', header=1)
+                        df = pandas.read_excel(plain_text + '.xlsx',
+                                               sheet_name='WR',
+                                               header=1)
                     else:
                         df = wrp.pandas_df_fill(database)
                     pandas.set_option('colheader_justify', 'center')
@@ -411,12 +781,49 @@ def cli_week(client, clsconfig, excel, remove, force, send):
                 traceback.print_exc(e)
 
 
-def cli_month(client, clsconfig, remove, force):
+def cli_month(client, clsconfig, remove, force, send):
+    """Generate work report every month
 
+    Args:
+        client (object): Notion client instance
+        clsconfig (dict): Config instance of .clslq.json
+        remove (bool): Remove dumped files or not
+        force (bool): Force generate or not
+        send (bool): Send email or not
+    """
     nowdate = datetime.datetime.now()
-    mtitle = "{}({}{:02})".format(
-        clsconfig.get('mr_title_prefix'), nowdate.year, nowdate.month)
+    if nowdate.day < 8:
+        mtitle = "{}({}{:02})".format(clsconfig.get('mr_title_prefix'),
+                                      nowdate.year, nowdate.month - 1)
+    else:
+        mtitle = "{}({}{:02})".format(clsconfig.get('mr_title_prefix'),
+                                      nowdate.year, nowdate.month)
     click.secho("{}".format(mtitle), fg='blue')
+
+    mrp = MonthReport(mtitle)
+    mrp.init(mtitle, clsconfig.get('user'), clsconfig.get('department'))
+    """Get week tasks, dump them into month table
+    """
+    for i in client.search()['results']:
+        # Itor all database
+        if i['object'] == 'database':
+            try:
+                database = client.databases.query(i['id'])
+                title = i['title']
+                mrp.render_itor_database(title, database, force)
+
+            except Exception as e:
+                clslog.error(e)
+                traceback.print_exc(e)
+    try:
+        mrp.render_html(mtitle)
+        if send:
+            mrp.send_email(clsconfig, mtitle)
+        if remove:
+            mrp.remove_files()
+    except Exception as e:
+        clslog.error(e)
+        traceback.print_exc(e)
 
 
 @click.option('--rtype',
@@ -434,11 +841,12 @@ def cli_month(client, clsconfig, remove, force):
               '-r',
               flag_value='RemoveFiles',
               help='Remove files or not')
-@click.option('--force',
-              '-f',
-              flag_value='force',
-              default=False,
-              help='Force generate right now, otherwise limited by valid datetime')
+@click.option(
+    '--force',
+    '-f',
+    flag_value='force',
+    default=False,
+    help='Force generate right now, otherwise limited by valid datetime')
 @click.option('--send',
               '-s',
               flag_value='send',
@@ -453,13 +861,13 @@ def cli_month(client, clsconfig, remove, force):
     allow_extra_args=True,
     ignore_unknown_options=True,
 ),
-    help="Notion Report Generator.")
+               help="Notion Report Generator.")
 def notion(rtype, config, excel, remove, force, send):
 
     clsconfig = ClslqConfigUnique(file=config)
     if clsconfig.get('secrets_from') is None:
-        click.secho(
-            "Make sure notion secret code is valid in .clslq.json", fg='red')
+        click.secho("Make sure notion secret code is valid in .clslq.json",
+                    fg='red')
         return
 
     client = Client(auth=clsconfig.get('secrets_from'),

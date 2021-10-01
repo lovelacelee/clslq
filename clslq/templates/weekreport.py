@@ -1,4 +1,5 @@
 wr_template = """
+
 <tbody>
   <tr>
     <td>
@@ -91,42 +92,37 @@ wr_template = """
     </td>
   </tr>
 </tbody>
+<!--Footer-->
 <div>
-    <span>
-        <div>
-            <p class="MsoNormal"
-                style="margin: 0px 0cm; font-size: 10.5pt; font-family: Calibri, sans-serif; line-height: 23.8px; widows: 1; text-align: justify; background-color: rgb(225, 245, 255);">
-                <b style="font-size: 10.5pt;">
-                    <span lang="EN-US">&nbsp;</span>
-                </b>
-            </p>
-            <p class="MsoNormal"
-                style="margin: 0px 0cm; font-size: 10.5pt; font-family: Calibri, sans-serif; line-height: 23.8px; widows: 1; text-align: justify; background-color: rgb(225, 245, 255);">
-                <b style="font-size: 10.5pt;">
-                    <span lang="EN-US"
-                        style="font-family: Times New Roman, serif; color: rgb(0, 147, 221);">&nbsp;&nbsp;&nbsp;&nbsp;Best regards</span>
-                </b>
-            </p>
-            <p class="MsoNormal"
-                style="margin: 0px 0cm; font-family: Microsoft YaHei UI, Tahoma; line-height: 23.8px; widows: 1; text-align: justify; background-color: rgb(225, 245, 255);">
-                <b style="font-size: 10.5pt;">
-                    <span lang="EN-US" style="font-size: 12pt;">
-                        <font face="黑体">&nbsp;&nbsp;&nbsp;&nbsp;$user</font>
-                        <font face="Calibri, sans-serif">&nbsp;</font>
-                    </span>
-                </b>
-                <b style="font-family: Calibri, sans-serif;">
-                    <span lang="EN-US" style="font-size: 14pt; font-family: 黑体;">&nbsp;</span>
-                    <span lang="EN-US" style="font-family: 黑体; font-size: 12px;">$department</span>
-                </b>
-            </p>
-            <p class="MsoNormal"
-                style="margin: 0px 0cm; font-size: 10.5pt; font-family: Calibri, sans-serif; line-height: 23.8px; widows: 1; text-align: justify; background-color: rgb(225, 245, 255);">
-                <b style="font-size: 10.5pt;">
-                    <span lang="EN-US">&nbsp;</span>
-                </b>
-            </p>
-        </div>
-    </span>
+    <p
+        style="margin: 0px 0cm; font-size: 10.5pt; font-family: Calibri, sans-serif; line-height: 23.8px; widows: 1; text-align: justify; background-color: rgb(225, 245, 255);">
+        <b style="font-size: 10.5pt;">&nbsp;</span></b>
+    </p>
+    <p
+        style="margin: 0px 0cm; font-size: 10.5pt; font-family: Calibri, sans-serif; line-height: 23.8px; widows: 1; text-align: justify; background-color: rgb(225, 245, 255);">
+        <b style="font-size: 10.5pt;">
+            <span lang="EN-US"
+                style="font-family: Times New Roman, serif; color: rgb(0, 147, 221);">&nbsp;&nbsp;&nbsp;&nbsp;Best
+                regards</span>
+        </b>
+    </p>
+    <p
+        style="margin: 0px 0cm; font-family: Microsoft YaHei UI, Tahoma; line-height: 23.8px; widows: 1; text-align: justify; background-color: rgb(225, 245, 255);">
+        <b style="font-size: 10.5pt;">
+            <span lang="EN-US" style="font-size: 12pt;">
+                <font face="黑体">&nbsp;&nbsp;&nbsp;&nbsp;$user</font>
+                <font face="Calibri, sans-serif">&nbsp;</font>
+            </span>
+        </b>
+        <b style="font-family: Calibri, sans-serif;">
+            <span lang="EN-US" style="font-size: 14pt; font-family: 黑体;">&nbsp;</span>
+            <span lang="EN-US" style="font-family: 黑体; font-size: 12px;">$department</span>
+        </b>
+    </p>
+    <p
+        style="margin: 0px 0cm; font-size: 10.5pt; font-family: Calibri, sans-serif; line-height: 23.8px; widows: 1; text-align: justify; background-color: rgb(225, 245, 255);">
+        <b style="font-size: 10.5pt;">&nbsp;</span></b>
+    </p>
 </div>
+
 """

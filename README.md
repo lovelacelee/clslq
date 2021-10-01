@@ -23,6 +23,7 @@ This project bootstrapped since 2021, the playground in python, first python lib
 
 - [ ] QT widgets collections
 - [ ] Cookiecutter intergrated
+- [x] Add Notion month report generator.
 - [x] Add Notion week report generator.
 - [x] SQL database operation wapper api
 - [x] Global root log wrapper
@@ -90,3 +91,5 @@ python3 -m clslq.cli --help
 
 * ExcelSupported: [[Stable]](https://docs.xlwings.org/en/stable/#) Which only compatible with Windows and MacOS
 * [openpyxl](https://openpyxl.readthedocs.io/en/stable/) is compatible with Linux too.
+* [DEV requirements](requirements/dev.txt)
+* [PROD requirements](requirements/prod.txt)

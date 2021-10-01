@@ -12,5 +12,7 @@
         ]
     },
     "wr_title_prefix": "XX的工作周报",
-    "mr_title_prefix": "XX的月度工作汇报"
+    "mr_title_prefix": "XX的月度工作汇报",
+    "user": "Lovelace",
+    "department": "RD"
 }

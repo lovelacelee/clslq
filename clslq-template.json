@@ -9,6 +9,9 @@
         },
         "receivers": [ 
             "xxxxxxxx@qq.com"
+        ],
+        "study_receivers": [ 
+            "xxxxxxxx@qq.com"
         ]
     },
     "wr_title_prefix": "XX的工作周报",

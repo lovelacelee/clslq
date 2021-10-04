@@ -94,6 +94,36 @@ class Report(object):
                     plan.to_html(classes='tablestyle', index=False, na_rep="")
                 }))
 
+    def send_study_email(self, config, title, email_html):
+        """Send report email to receivers defined in .clslq.json
+
+        Args:
+            config (dict): Loaded json object from .clslq.json
+            title (str): Unicode string as email subject
+        """
+        email = config.get('email')
+        smtpserver = email['sender']['smtpserver']
+        user = email['sender']['user']
+        pwd = email['sender']['pwd']
+        receivers = email['study_receivers']
+        clslog.info("{} {} {}".format(smtpserver, user, title))
+
+        msg = MIMEMultipart()
+        msg['From'] = "{}".format(user)
+        msg['To'] = ",".join(receivers)
+        msg['Subject'] = Header(title, 'utf-8')
+        msg.attach(MIMEText(email_html, 'html', 'utf-8'))
+        try:
+            smtp = smtplib.SMTP()
+            smtp.connect(smtpserver)
+            smtp.login(user, pwd)
+            smtp.sendmail(user, receivers, msg.as_string())
+            clslog.info('Email sent to {} done'.format(receivers))
+            smtp.quit()
+            smtp.close()
+        except Exception as e:
+            clslog.critical(e)
+
     def send_email(self, config, title):
         """Send report email to receivers defined in .clslq.json
 
@@ -394,6 +424,18 @@ class MonthReport(Report):
         self._duties = str('')
         self._programming_tasks = str('')
         self._reading_share = str('')
+        _template = """
+            <li style="list-style-type: upper-roman;">{content}&nbsp;<span style="color:green;">{solve}</span></li>
+        """
+        self._reading_share += _template.format(**{
+            'content': u"项目例会中结合技术管理、结构思考等方面书中所学",
+            'solve': u"会议提议与解决着重高效"
+        })
+        self._reading_share += _template.format(
+            **{
+                'content': u"日常工作结合技术分享精神",
+                'solve': u"利用自身高效整理的特点，将团队技术栈相关的有用信息分享给团队开发人员"
+            })
         self._directions = str('')
 
         self._user = user
@@ -451,24 +493,231 @@ class MonthReport(Report):
         finally:
             return result.replace('\n', ' ')
 
-    def render_reading_books(self, database):
-        self._book = "活法"
+    def block_list_children(self, client, block, tag, level=1):
+        """"""
+        bs = client.blocks.children.list(block['id'])
+        children = str('')
+        if tag == 'ol':
+            if level == 1:
+                children = "<" + tag + " type=\"A\">"
+            elif level == 2:
+                children = "<" + tag + " type=\"a\">"
+            elif level == 3:
+                children = "<" + tag + " type=\"I\">"
+            elif level == 4:
+                children = "<" + tag + " type=\"i\">"
+            else:
+                children = "<" + tag + " type=\"1\">"
+        elif tag == 'ul':
+            if level == 1:
+                children = "<" + tag + " style=\"list-style-type:circle\">"
+            elif level == 2:
+                children = "<" + tag + " style=\"list-style-type:square\">"
+            elif level == 3:
+                children = "<" + tag + " style=\"list-style-type:disc\">"
+            elif level == 4:
+                children = "<" + tag + " style=\"list-style-type:circle\">"
+            else:
+                children = "<" + tag + " style=\"none\">"
 
-    def render_reading_notes(self, database):
-        self._book_content = "<p>读书笔记-=asdfasdfasdf东奔西走asdfa</p>"
+        for b in bs['results']:
+            plain_text = str('')
+            if b['type'] == "bulleted_list_item":
+                for t in b[b['type']]['text']:
+                    plain_text += t['plain_text']
+                if b['has_children']:
+                    level += 1
+                    children += """<li>{item}{children}</li>""".format(
+                        **{
+                            'item':
+                            plain_text,
+                            'children':
+                            self.block_list_children(client, b, tag, level)
+                        })
 
-    def render_study_note(self, database):
-        self._study_list = "232434234"
+                else:
+                    children += """<li>{item}</li>""".format(
+                        **{'item': plain_text})
+            elif b['type'] == "image":
+                children += """<img src="{url}"></img>""".format(
+                    **{'url': b[b['type']]['file']['url']})
+        children += "</" + tag + ">"
+        return children
+
+    def render_block_list(self, client, block, tag):
+        plain_text = str('')
+        for t in block[block['type']]['text']:
+            plain_text += t['plain_text']
+        if block['has_children']:
+            last = """<li>{item}{children}</li>""".format(
+                **{
+                    'item': plain_text,
+                    'children': self.block_list_children(client, block, tag)
+                })
+        else:
+            last = """<li>{item}</li>""".format(**{'item': plain_text})
+        # clslog.info(last)
+        return last
+
+    def render_block_items(self, client, page):
+        page_html_tags = str('')
+        p_template = """
+            <p style="text-indent: 2em;">{p}</p>
+        """
+        img_template = """
+            <img src="{img}"></img>
+        """
+
+        page_id = page['id']
+        page_blocks = client.blocks.retrieve(page_id)
+        page_content = client.blocks.children.list(page_blocks['id'])
+        # clslog.info(json.dumps(page_content))
+        """Supported blocks:
+        paragraph, numbered_list_item, bulleted_list_item
+        emoji icons
+        """
+        bulleted_list = str('')
+        numbered_list = str('')
+        last_type = None
+        for i in range(len(page_content['results'])):
+            b = page_content['results'][i]
+            # End of <ol>
+            if (last_type == 'numbered_list_item'
+                    and b['type'] != 'numbered_list_item') or i == len(
+                        page_content['results']) - 1:
+                page_html_tags += """<ol type="1">{list}</ol>""".format(
+                    **{'list': numbered_list})
+                numbered_list = str('')
+            # End of <ul>
+            if (last_type == 'bulleted_list_item'
+                    and b['type'] != 'bulleted_list_item') or i == len(
+                        page_content['results']) - 1:
+                page_html_tags += """<ul style="list-style-type:disc">{list}</ul>""".format(
+                    **{'list': bulleted_list})
+                bulleted_list = str('')
+            if b['type'] == 'paragraph':
+                text = str('')
+                for t in b['paragraph']['text']:
+                    text += t['plain_text']
+                page_html_tags += p_template.format(**{'p': text.strip()})
+
+            elif b['type'] == 'image':
+                page_html_tags += img_template.format(
+                    **{'img': b['image']['file']['url']})
+            elif b['type'] == 'numbered_list_item':
+                numbered_list += self.render_block_list(client, b, 'ol')
+            elif b['type'] == 'bulleted_list_item':
+                bulleted_list += self.render_block_list(client, b, 'ul')
+            elif b['type'] == 'heading_1':
+                text = str('')
+                for t in b[b['type']]['text']:
+                    text += t['plain_text']
+                page_html_tags += """<h1>{head}</h1>""".format(
+                    **{'head': text.strip()})
+            elif b['type'] == 'heading_2':
+                text = str('')
+                for t in b[b['type']]['text']:
+                    text += t['plain_text']
+                page_html_tags += """<h2>{head}</h2>""".format(
+                    **{'head': text.strip()})
+            elif b['type'] == 'heading_3':
+                text = str('')
+                for t in b[b['type']]['text']:
+                    text += t['plain_text']
+                page_html_tags += """<h3>{head}</h3>""".format(
+                    **{'head': text.strip()})
+            elif b['type'] == 'heading_4':
+                text = str('')
+                for t in b[b['type']]['text']:
+                    text += t['plain_text']
+                page_html_tags += """<h4>{head}</h4>""".format(
+                    **{'head': text.strip()})
+            elif b['type'] == 'heading_5':
+                text = str('')
+                for t in b[b['type']]['text']:
+                    text += t['plain_text']
+                page_html_tags += """<h5>{head}</h5>""".format(
+                    **{'head': text.strip()})
+            elif b['type'] == 'heading_6':
+                text = str('')
+                for t in b[b['type']]['text']:
+                    text += t['plain_text']
+                page_html_tags += """<h6>{head}</h6>""".format(
+                    **{'head': text.strip()})
+            elif b['type'] == 'code':
+                text = str('')
+                for t in b[b['type']]['text']:
+                    text += t['plain_text']
+                page_html_tags += """<pre><code>{code}</code></pre>""".format(
+                    **{'code': text.strip()})
+            elif b['type'] == 'bookmark':
+                text = str('')
+                for t in b[b['type']]['caption']:
+                    text += t['plain_text']
+                page_html_tags += """<a href="{bookmark}" target="_blank">{caption}</a>""".format(
+                    **{
+                        'bookmark': b[b['type']]['url'],
+                        'caption': text.strip()
+                    })
+            else:
+                clslog.warning("Type:{}".format(b['type']))
+                bs = client.blocks.retrieve(b['id'])
+                clslog.info(
+                    "{} Not supported by current Notion API, more info please visit {}"
+                    .format(
+                        bs,
+                        "https://developers.notion.com/docs/working-with-page-content#modeling-content-as-blocks"
+                    ))
+
+            last_type = b['type']
+        return page_html_tags
+
+    def render_reading_books(self, client, database):
+        for page in database['results']:
+            item = page['properties']
+            date = datetime.datetime.fromisoformat(
+                item[u'收录日期']['date']['start'])
+            now = datetime.datetime.now()
+            """Skip useless databases
+            """
+            if abs(date - now) <= datetime.timedelta(days=30):
+                self._book += self.content_parse_title(item)
+                self._book_content += self.render_block_items(client, page)
+
+    def render_study_note(self, client, database):
+
+        for page in database['results']:
+            item = page['properties']
+            date = datetime.datetime.fromisoformat(
+                item[u'收录日期']['date']['start'])
+            now = datetime.datetime.now()
+            """Skip useless databases
+            """
+            if abs(date - now) <= datetime.timedelta(days=30):
+                self._study_list += """<a href="{url}" target="_blank"><h3>{title}</h3></a>""".format(
+                    **{
+                        'title': self.content_parse_title(item),
+                        'url': item[u'链接']['url']
+                    })
+
+                self._study_list += self.render_block_items(client, page)
+        # clslog.info(self._study_list)
 
     def render_maintarget(self, database):
-        self._main_target = "分解公司业务目标"
+        for node in database['results']:
+            item = node['properties']
+            self._main_target += """<li style="list-style-type: demical;">{p}</li>""".format(
+                **{'p': item[u'目标']['title'][0]['plain_text']})
 
     def render_teamtarget(self, database):
-        self._team_target = "团队成员的能力匹配"
+        for node in database['results']:
+            item = node['properties']
+            self._team_target += """<li style="list-style-type: demical;">{p}</li>""".format(
+                **{'p': item[u'目标']['title'][0]['plain_text']})
 
     def render_technology(self, database):
         _template = """
-            <p>{content}&nbsp;<span style="color:red;">{state}</span>&nbsp;<span style="color:red;">{problem}</span>&nbsp;<span style="color:red;">{solve}</span></p>
+            <li style="list-style-type: upper-roman;">{content}&nbsp;<span style="color:green;">{solve}</span></li>
         """
 
         for node in database['results']:
@@ -478,14 +727,12 @@ class MonthReport(Report):
                 self._technology += _template.format(
                     **{
                         'content': self.content_parse_title(item),
-                        'state': self.content_parse_state(item),
-                        'problem': self.content_parse_richtext(item, u'问题'),
                         'solve': self.content_parse_richtext(item, u'解决方法')
                     })
 
     def render_review(self, database):
         _template = """
-            <p>{content}&nbsp;<span style="color:red;">{state}</span>&nbsp;<span style="color:red;">{problem}</span>&nbsp;<span style="color:red;">{solve}</span></p>
+            <li style="list-style-type: upper-roman;">{content}&nbsp;<span style="color:green;">{solve}</span></li>
         """
 
         for node in database['results']:
@@ -495,14 +742,12 @@ class MonthReport(Report):
                 self._review += _template.format(
                     **{
                         'content': self.content_parse_title(item),
-                        'state': self.content_parse_state(item),
-                        'problem': self.content_parse_richtext(item, u'问题'),
                         'solve': self.content_parse_richtext(item, u'解决方法')
                     })
 
     def render_maintainance(self, database):
         _template = """
-            <p>{content}&nbsp;<span style="color:red;">{state}</span>&nbsp;<span style="color:red;">{problem}</span>&nbsp;<span style="color:red;">{solve}</span></p>
+            <li style="list-style-type: upper-roman;">{content}&nbsp;<span style="color:blue;">{solve}</span></li>
         """
 
         for node in database['results']:
@@ -512,14 +757,12 @@ class MonthReport(Report):
                 self._maintainance += _template.format(
                     **{
                         'content': self.content_parse_title(item),
-                        'state': self.content_parse_state(item),
-                        'problem': self.content_parse_richtext(item, u'问题'),
                         'solve': self.content_parse_richtext(item, u'解决方法')
                     })
 
     def render_patent(self, database):
         _template = """
-            <p>{content}&nbsp;<span style="color:red;">{state}</span>&nbsp;<span style="color:red;">{problem}</span>&nbsp;<span style="color:red;">{solve}</span></p>
+            <li style="list-style-type: upper-roman;">{content}&nbsp;<span style="color:green;">{solve}</span></li>
         """
 
         for node in database['results']:
@@ -529,14 +772,14 @@ class MonthReport(Report):
                 self._patent += _template.format(
                     **{
                         'content': self.content_parse_title(item),
-                        'state': self.content_parse_state(item),
-                        'problem': self.content_parse_richtext(item, u'问题'),
                         'solve': self.content_parse_richtext(item, u'解决方法')
                     })
 
     def render_techissues(self, database):
         _template = """
-            <p>{content}&nbsp;<span style="color:red;">{state}</span>&nbsp;<span style="color:red;">{problem}</span>&nbsp;<span style="color:red;">{solve}</span></p>
+            <li style="list-style-type: upper-roman;">{content}&nbsp;
+            <span style="color:red;">{problem}</span>&nbsp;
+            <span style="color:green;">{solve}</span></li>
         """
 
         for node in database['results']:
@@ -546,14 +789,13 @@ class MonthReport(Report):
                 self._tech_issues += _template.format(
                     **{
                         'content': self.content_parse_title(item),
-                        'state': self.content_parse_state(item),
                         'problem': self.content_parse_richtext(item, u'问题'),
                         'solve': self.content_parse_richtext(item, u'解决方法')
                     })
 
     def render_duties(self, database):
         _template = """
-            <p>{content}&nbsp;<span style="color:red;">{state}</span>&nbsp;<span style="color:red;">{problem}</span>&nbsp;<span style="color:red;">{solve}</span></p>
+            <li style="list-style-type: upper-roman;">{content}&nbsp;<span style="color:green;">{solve}</span></li>
         """
 
         for node in database['results']:
@@ -563,14 +805,12 @@ class MonthReport(Report):
                 self._duties += _template.format(
                     **{
                         'content': self.content_parse_title(item),
-                        'state': self.content_parse_state(item),
-                        'problem': self.content_parse_richtext(item, u'问题'),
                         'solve': self.content_parse_richtext(item, u'解决方法')
                     })
 
     def render_programming_work(self, database):
         _template = """
-            <p>{content}&nbsp;<span style="color:red;">{state}</span>&nbsp;<span style="color:red;">{problem}</span>&nbsp;<span style="color:red;">{solve}</span></p>
+            <li style="list-style-type: upper-roman;">{content}&nbsp;<span style="color:green;">{solve}</span></li>
         """
 
         for node in database['results']:
@@ -580,16 +820,13 @@ class MonthReport(Report):
                 self._programming_tasks += _template.format(
                     **{
                         'content': self.content_parse_title(item),
-                        'state': self.content_parse_state(item),
-                        'problem': self.content_parse_richtext(item, u'问题'),
                         'solve': self.content_parse_richtext(item, u'解决方法')
                     })
 
     def render_reading_share(self, database):
         _template = """
-            <p>{content}&nbsp;<span style="color:red;">{state}</span>&nbsp;<span style="color:red;">{problem}</span>&nbsp;<span style="color:red;">{solve}</span></p>
+            <li style="list-style-type: upper-roman;">{content}&nbsp;<span style="color:green;">{solve}</span></li>
         """
-
         for node in database['results']:
             item = node['properties']
             _type = self.content_parse_type(item)
@@ -597,14 +834,12 @@ class MonthReport(Report):
                 self._reading_share += _template.format(
                     **{
                         'content': self.content_parse_title(item),
-                        'state': self.content_parse_state(item),
-                        'problem': self.content_parse_richtext(item, u'问题'),
                         'solve': self.content_parse_richtext(item, u'解决方法')
                     })
 
     def render_directions(self, database):
         _template = """
-            <p>{content}&nbsp;<span style="color:red;">{state}</span>&nbsp;<span style="color:red;">{problem}</span>&nbsp;<span style="color:red;">{solve}</span></p>
+            <li style="list-style-type: upper-roman;">{content}&nbsp;<span style="color:green;">{solve}</span></li>
         """
 
         for node in database['results']:
@@ -614,15 +849,11 @@ class MonthReport(Report):
                 self._directions += _template.format(
                     **{
                         'content': self.content_parse_title(item),
-                        'state': self.content_parse_state(item),
-                        'problem': self.content_parse_richtext(item, u'问题'),
                         'solve': self.content_parse_richtext(item, u'解决方法')
                     })
 
     def parse_week_tasks(self, database):
         clslog.info("解析当月工作任务")
-        self.render_maintarget(database)
-        self.render_teamtarget(database)
         self.render_technology(database)
         self.render_patent(database)
         self.render_review(database)
@@ -633,7 +864,7 @@ class MonthReport(Report):
         self.render_reading_share(database)
         self.render_directions(database)
 
-    def render_itor_database(self, title, database, force):
+    def render_itor_database(self, client, dbid, title, database, force):
         try:
             for t in title:
                 # Use BT-Panel timer task to trigger
@@ -644,13 +875,19 @@ class MonthReport(Report):
                         break
 
                 plain_text = t['plain_text'].strip().replace(' → ', '~')
+                clslog.info(plain_text)
                 """Reading list"""
                 if plain_text == u"读书如斯":
-                    self.render_reading_books(database)
-                    self.render_reading_notes(database)
+                    self.render_reading_books(client, database)
                     break
                 if plain_text == u"网络万象":
-                    self.render_study_note(database)
+                    self.render_study_note(client, database)
+                    break
+                if plain_text == u"公司整体目标":
+                    self.render_maintarget(database)
+                    break
+                if plain_text == u"团队技术方向和目标":
+                    self.render_teamtarget(database)
                     break
                 """Week report parse"""
                 plain_text_head = t['plain_text'][0:3]  # Filter for week tasks
@@ -712,6 +949,29 @@ class MonthReport(Report):
                     "user": self._user,
                     "department": self._department
                 }))
+
+    def render_study_html(self, title):
+        """Render html form template
+
+        Note that some of the email display methods only support inline-css style,
+        This method support inline-css for table headers and rows.
+
+        Args:
+            title (str): Title of html and email subject
+        """
+        clslog.info(
+            "Render study content[Inline-CSS] html for {}".format(title))
+
+        html = string.Template(monthreport.mstudy_template)
+
+        return html.safe_substitute({
+            "title": title,
+            "book": self._book,
+            "book_content": self._book_content,
+            "study": self._study_list,
+            "user": self._user,
+            "department": self._department
+        })
 
 
 def cli_week(client, clsconfig, excel, remove, force, send):
@@ -810,15 +1070,20 @@ def cli_month(client, clsconfig, remove, force, send):
             try:
                 database = client.databases.query(i['id'])
                 title = i['title']
-                mrp.render_itor_database(title, database, force)
+                mrp.render_itor_database(client, i['id'], title, database,
+                                         force)
 
             except Exception as e:
                 clslog.error(e)
                 traceback.print_exc(e)
     try:
         mrp.render_html(mtitle)
+        study_title = "C(oncept)T(each)R(eview)S(implify)({}{:02})".format(
+            nowdate.year, nowdate.month)
+        study_email = mrp.render_study_html(study_title)
         if send:
             mrp.send_email(clsconfig, mtitle)
+            mrp.send_study_email(clsconfig, study_title, study_email)
         if remove:
             mrp.remove_files()
     except Exception as e:

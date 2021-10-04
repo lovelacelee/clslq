@@ -24,22 +24,9 @@ mr_template = """
                         </td>
                     </tr>
                     <tr>
-                        <td style="padding: 10px; border: none;">
-                            <fieldset style="border: 1px solid #e5e5e5">
-                                <legend style="color: #114f8e;font-size: 16pt;">二、学习</legend>
-                                <div style="padding:5px;">
-                                    <p
-                                        style="margin: 0px 0cm; text-align: justify; font-size: 10.5pt; font-family: Calibri, sans-serif;">
-                                        $study
-                                    </p>
-                                </div>
-                            </fieldset>
-                        </td>
-                    </tr>
-                    <tr>
                         <td style="padding:0px 10px 10px 10px; border: none;">
                             <fieldset style="border: 1px solid #e5e5e5">
-                                <legend style="color: #114f8e;font-size: 16pt;">三、月度工作</legend>
+                                <legend style="color: #114f8e;font-size: 16pt;">二、月度工作</legend>
                                 <div style="padding:5px;">
 
                                     <table border="0" cellspacing="0" cellpadding="0"
@@ -88,7 +75,7 @@ mr_template = """
                                                 </td>
                                                 <td width="472"
                                                     style="width:353.65pt;border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0cm 5.4pt 0cm 5.4pt">
-                                                    $main_target
+                                                    <span style="font-family: 宋体; font-size: 10.5pt;">$main_target</span>
                                                 </td>
                                             </tr>
                                             <!--拆解目标-->
@@ -104,7 +91,7 @@ mr_template = """
                                                 </td>
                                                 <td width="472"
                                                     style="width:353.65pt;border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0cm 5.4pt 0cm 5.4pt">
-                                                    $team_target
+                                                    <span style="font-family: 宋体; font-size: 10.5pt;">$team_target</span>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -133,7 +120,7 @@ mr_template = """
                                                 </td>
                                                 <td width="472"
                                                     style="width:353.65pt;border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0cm 5.4pt 0cm 5.4pt">
-                                                    $technology
+                                                    <span style="font-family: 宋体; font-size: 10.5pt;">$technology</span>
                                                 </td>
                                             </tr>
                                             <tr style="height:12.75pt">
@@ -146,7 +133,7 @@ mr_template = """
                                                 </td>
                                                 <td width="472"
                                                     style="width:353.65pt;border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0cm 5.4pt 0cm 5.4pt;height:12.75pt">
-                                                    $patent
+                                                    <span style="font-family: 宋体; font-size: 10.5pt;">$patent</span>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -167,7 +154,7 @@ mr_template = """
                                                 </td>
                                                 <td width="472"
                                                     style="width:353.65pt;border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0cm 5.4pt 0cm 5.4pt">
-                                                    $review
+                                                    <span style="font-family: 宋体; font-size: 10.5pt;">$review</span>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -182,7 +169,7 @@ mr_template = """
                                                 <td width="472" style="width:353.65pt;border-top:none;border-left:none;
                                             border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
                                             padding:0cm 5.4pt 0cm 5.4pt">
-                                                    $technology_issues
+                                                    <span style="font-family: 宋体; font-size: 10.5pt;">$technology_issues</span>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -197,7 +184,7 @@ mr_template = """
                                                 <td width="472" style="width:353.65pt;border-top:none;border-left:none;
                                             border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
                                             padding:0cm 5.4pt 0cm 5.4pt">
-                                                    $maintainance
+                                                    <span style="font-family: 宋体; font-size: 10.5pt;">$maintainance</span>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -212,7 +199,7 @@ mr_template = """
                                                 <td width="472" style="width:353.65pt;border-top:none;border-left:none;
                                             border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
                                             padding:0cm 5.4pt 0cm 5.4pt">
-                                                    $duties
+                                                    <span style="font-family: 宋体; font-size: 10.5pt;">$duties</span>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -266,7 +253,7 @@ mr_template = """
                                                 <td width="472" style="width:353.65pt;border-top:none;border-left:none;
                                             border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
                                             padding:0cm 5.4pt 0cm 5.4pt">
-                                                    $programming_work
+                                                    <span style="font-family: 宋体; font-size: 10.5pt;">$programming_work</span>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -302,7 +289,7 @@ mr_template = """
                                                 <td width="472" style="width:353.65pt;border-top:none;border-left:none;
                                             border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
                                             padding:0cm 5.4pt 0cm 5.4pt">
-                                                    $reading_share
+                                                    <span style="font-family: 宋体; font-size: 10.5pt;">$reading_share</span>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -338,11 +325,104 @@ mr_template = """
                                                 <td width="472" style="width:353.65pt;border-top:none;border-left:none;
                                             border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
                                             padding:0cm 5.4pt 0cm 5.4pt">
-                                                    $direction
+                                                    <span style="font-family: 宋体; font-size: 10.5pt;">$direction</span>
                                                 </td>
                                             </tr>
                                         </tbody>
                                     </table>
+                                </div>
+                            </fieldset>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: none;">
+                            <fieldset style="border: 1px solid #e5e5e5">
+                                <legend style="color: #114f8e;font-size: 16pt;">三、学习</legend>
+                                <div style="padding:5px;">
+                                    <p
+                                        style="margin: 0px 0cm; text-align: justify; font-size: 10.5pt; font-family: Calibri, sans-serif;">
+                                        $study
+                                    </p>
+                                </div>
+                            </fieldset>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </td>
+    </tr>
+</tbody>
+
+<!--Footer-->
+<div>
+    <p
+        style="margin: 0px 0cm; font-size: 10.5pt; font-family: Calibri, sans-serif; line-height: 23.8px; widows: 1; text-align: justify; background-color: rgb(225, 245, 255);">
+        <b style="font-size: 10.5pt;">&nbsp;</span></b>
+    </p>
+    <p
+        style="margin: 0px 0cm; font-size: 10.5pt; font-family: Calibri, sans-serif; line-height: 23.8px; widows: 1; text-align: justify; background-color: rgb(225, 245, 255);">
+        <b style="font-size: 10.5pt;">
+            <span lang="EN-US"
+                style="font-family: Times New Roman, serif; color: rgb(0, 147, 221);">&nbsp;&nbsp;&nbsp;&nbsp;Best
+                regards</span>
+        </b>
+    </p>
+    <p
+        style="margin: 0px 0cm; font-family: Microsoft YaHei UI, Tahoma; line-height: 23.8px; widows: 1; text-align: justify; background-color: rgb(225, 245, 255);">
+        <b style="font-size: 10.5pt;">
+            <span lang="EN-US" style="font-size: 12pt;">
+                <font face="黑体">&nbsp;&nbsp;&nbsp;&nbsp;$user</font>
+                <font face="Calibri, sans-serif">&nbsp;</font>
+            </span>
+        </b>
+        <b style="font-family: Calibri, sans-serif;">
+            <span lang="EN-US" style="font-size: 14pt; font-family: 黑体;">&nbsp;</span>
+            <span lang="EN-US" style="font-family: 黑体; font-size: 12px;">$department</span>
+        </b>
+    </p>
+    <p
+        style="margin: 0px 0cm; font-size: 10.5pt; font-family: Calibri, sans-serif; line-height: 23.8px; widows: 1; text-align: justify; background-color: rgb(225, 245, 255);">
+        <b style="font-size: 10.5pt;">&nbsp;</span></b>
+    </p>
+</div>
+
+
+"""
+
+mstudy_template = """
+
+<tbody>
+    <tr>
+        <td>
+            <table border="0" cellpadding="0" cellspacing="0"
+                style="border-collapse: collapse; width:100%; background-color: #fff; border: 1px solid #cfcfcf; box-shadow: 0 0px 6px rgba(0, 0, 0, 0.1); margin-bottom: 20px; font-size:13px;">
+                <tbody>
+                    <tr height="34"
+                        style="height:34.0pt;vertical-align: middle; text-align: center;padding: 10px; background-color: #f3f9f1; border: none; font-size: 20px; font-weight: bold; border-bottom: 1px solid #e5e5e5;">
+                        <td style="color: #333; ">$title</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: none;">
+                            <fieldset style="border: 1px solid #e5e5e5">
+                                <legend style="color: #114f8e;font-size: 16pt;">一、读书：$book</legend>
+                                <div style="padding:5px;">
+                                    <p
+                                        style="margin: 0px 0cm; text-align: justify; font-size: 10.5pt; font-family: Calibri, sans-serif;">
+                                        $book_content
+                                    </p>
+                                </div>
+                            </fieldset>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: none;">
+                            <fieldset style="border: 1px solid #e5e5e5">
+                                <legend style="color: #114f8e;font-size: 16pt;">二、学习</legend>
+                                <div style="padding:5px;">
+                                    <p
+                                        style="margin: 0px 0cm; text-align: justify; font-size: 10.5pt; font-family: Calibri, sans-serif;">
+                                        $study
+                                    </p>
                                 </div>
                             </fieldset>
                         </td>

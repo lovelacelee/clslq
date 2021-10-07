@@ -1,6 +1,9 @@
 CHANGES
 =======
 
+* **202110**
+    * 1.2.2 Notion based work report generator supported.
+
 * **202109**
     * 1.2.1 Bug fix on v1.2.0
     * 1.2.0 Notion export based on notion-py which is not officially supported by Notion.

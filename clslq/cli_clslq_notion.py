@@ -753,7 +753,7 @@ class MonthReport(Report):
         for node in database['results']:
             item = node['properties']
             _type = self.content_parse_type(item)
-            if _type == u'项目运维' or _type == u'IT运维':
+            if _type == u'项目维护' or _type == u'IT运维':
                 self._maintainance += _template.format(
                     **{
                         'content': self.content_parse_title(item),

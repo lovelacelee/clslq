@@ -22,6 +22,7 @@ import os
 import re
 import traceback
 import pandas
+import calendar
 # Support email
 import smtplib
 from email.mime.text import MIMEText
@@ -52,6 +53,7 @@ class Report(object):
     Args:
         object (wbname): Workbook name, generated document file name
     """
+
     def __init__(self, wbname):
         self.wb = Workbook()
         self.sht = self.wb.active
@@ -64,6 +66,7 @@ class Report(object):
                                      bottom=Side(border_style='thin',
                                                  color='000000'))
         self.wbname = wbname
+        self.datetime_now = datetime.datetime.now()
 
     def render_html_without_inline_css(self, title, df):
         """Render html form template, use pandas
@@ -408,8 +411,37 @@ class WeekReport(Report):
 
 
 class MonthReport(Report):
+    def belongs(self, date):
+        if date > self._mdaystart and date <= self._mdayend:
+            return True
+        else:
+            return False
+
+    def week_belongs(self, sdate, edate):
+        if sdate >= (self._mdaystart - datetime.timedelta(days=1)) and edate <= (self._mdayend + datetime.timedelta(days=1)):
+            return True
+        else:
+            return False
+
     def init(self, title, user, department):
-        self._title = title
+
+        nowdate = self.datetime_now
+        if nowdate.month == 1:
+            lastmonth = 12
+        else:
+            lastmonth = nowdate.month - 1
+        self._mdaystart = nowdate - \
+            datetime.timedelta(days=(nowdate.day + calendar.mdays[lastmonth]))
+        self._mdayend = nowdate - datetime.timedelta(days=nowdate.day)
+
+        clslog.critical("==月报检索{}==>{}周报及读书学习笔记==".format(
+            self._mdaystart.strftime("%Y%m%d"), self._mdayend.strftime("%Y%m%d")))
+
+        # 当月发上月报告
+        mtitle = "{}({}{:02})".format(title, nowdate.year, lastmonth)
+        click.secho("{}".format(mtitle), fg='blue')
+
+        self._title = mtitle
 
         self._book = str('')
         self._book_content = str('')
@@ -425,7 +457,9 @@ class MonthReport(Report):
         self._programming_tasks = str('')
         self._reading_share = str('')
         _template = """
-            <li style="list-style-type: upper-roman;">{content}&nbsp;<span style="color:green;">{solve}</span></li>
+            <li style="list-style-type: upper-roman;">
+            <span style="font-weight: bold;">{content}</span>
+            &nbsp;<span style="color:green;">{solve}</span></li>
         """
         self._reading_share += _template.format(**{
             'content': u"项目例会中结合技术管理、结构思考等方面书中所学",
@@ -440,6 +474,21 @@ class MonthReport(Report):
 
         self._user = user
         self._department = department
+
+    @property
+    def mtitle(self):
+        return self._title
+
+    @mtitle.setter
+    def mtitle(self, xtitle):
+        if not isinstance(xtitle, str):
+            raise ValueError("mtitle must be an string")
+        else:
+            self._title = xtitle
+
+    @property
+    def now(self):
+        return self.datetime_now
 
     def content_parse_title(self, item):
         result = None
@@ -677,10 +726,10 @@ class MonthReport(Report):
             item = page['properties']
             date = datetime.datetime.fromisoformat(
                 item[u'收录日期']['date']['start'])
-            now = datetime.datetime.now()
+
             """Skip useless databases
             """
-            if abs(date - now) <= datetime.timedelta(days=30):
+            if self.belongs(date):
                 self._book += self.content_parse_title(item)
                 self._book_content += self.render_block_items(client, page)
 
@@ -690,10 +739,10 @@ class MonthReport(Report):
             item = page['properties']
             date = datetime.datetime.fromisoformat(
                 item[u'收录日期']['date']['start'])
-            now = datetime.datetime.now()
+
             """Skip useless databases
             """
-            if abs(date - now) <= datetime.timedelta(days=30):
+            if self.belongs(date):
                 self._study_list += """<a href="{url}" target="_blank"><h3>{title}</h3></a>""".format(
                     **{
                         'title': self.content_parse_title(item),
@@ -717,7 +766,10 @@ class MonthReport(Report):
 
     def render_technology(self, database):
         _template = """
-            <li style="list-style-type: upper-roman;">{content}&nbsp;<span style="color:green;">{solve}</span></li>
+            <li style="list-style-type: upper-roman; ">
+            <span style="font-weight: bold;">{content}</span>
+            &nbsp;<span style="color:green;">{solve}</span>
+            &nbsp;<span style="color:blue;">{summary}</span></li>
         """
 
         for node in database['results']:
@@ -727,12 +779,16 @@ class MonthReport(Report):
                 self._technology += _template.format(
                     **{
                         'content': self.content_parse_title(item),
+                        'summary': self.content_parse_richtext(item, u'评审、复盘、总结'),
                         'solve': self.content_parse_richtext(item, u'解决方法')
                     })
 
     def render_review(self, database):
         _template = """
-            <li style="list-style-type: upper-roman;">{content}&nbsp;<span style="color:green;">{solve}</span></li>
+            <li style="list-style-type: upper-roman; ">
+            <span style="font-weight: bold;">{content}</span>
+            &nbsp;<span style="color:green;">{solve}</span>
+            &nbsp;<span style="color:blue;">{summary}</span></li>
         """
 
         for node in database['results']:
@@ -742,12 +798,16 @@ class MonthReport(Report):
                 self._review += _template.format(
                     **{
                         'content': self.content_parse_title(item),
+                        'summary': self.content_parse_richtext(item, u'评审、复盘、总结'),
                         'solve': self.content_parse_richtext(item, u'解决方法')
                     })
 
     def render_maintainance(self, database):
         _template = """
-            <li style="list-style-type: upper-roman;">{content}&nbsp;<span style="color:blue;">{solve}</span></li>
+            <li style="list-style-type: upper-roman; ">
+            <span style="font-weight: bold;">{content}</span>
+            &nbsp;<span style="color:blue;">{solve}</span>
+            &nbsp;<span style="color:blue;">{summary}</span></li>
         """
 
         for node in database['results']:
@@ -757,12 +817,15 @@ class MonthReport(Report):
                 self._maintainance += _template.format(
                     **{
                         'content': self.content_parse_title(item),
+                        'summary': self.content_parse_richtext(item, u'评审、复盘、总结'),
                         'solve': self.content_parse_richtext(item, u'解决方法')
                     })
 
     def render_patent(self, database):
         _template = """
-            <li style="list-style-type: upper-roman;">{content}&nbsp;<span style="color:green;">{solve}</span></li>
+            <li style="list-style-type: upper-roman;">
+            <span style="font-weight: bold;">{content}</span>
+            &nbsp;<span style="color:green;">{solve}</span></li>
         """
 
         for node in database['results']:
@@ -777,9 +840,11 @@ class MonthReport(Report):
 
     def render_techissues(self, database):
         _template = """
-            <li style="list-style-type: upper-roman;">{content}&nbsp;
+            <li style="list-style-type: upper-roman; ">
+            <span style="font-weight: bold;">{content}</span>&nbsp;
             <span style="color:red;">{problem}</span>&nbsp;
-            <span style="color:green;">{solve}</span></li>
+            <span style="color:green;">{solve}</span>
+            &nbsp;<span style="color:blue;">{summary}</span></li>
         """
 
         for node in database['results']:
@@ -790,12 +855,16 @@ class MonthReport(Report):
                     **{
                         'content': self.content_parse_title(item),
                         'problem': self.content_parse_richtext(item, u'问题'),
+                        'summary': self.content_parse_richtext(item, u'评审、复盘、总结'),
                         'solve': self.content_parse_richtext(item, u'解决方法')
                     })
 
     def render_duties(self, database):
         _template = """
-            <li style="list-style-type: upper-roman;">{content}&nbsp;<span style="color:green;">{solve}</span></li>
+            <li style="list-style-type: upper-roman;">
+            <span style="font-weight: bold;">{content}</span>
+            &nbsp;<span style="color:green;">{solve}</span>
+            &nbsp;<span style="color:blue;">{summary}</span></li>
         """
 
         for node in database['results']:
@@ -805,12 +874,16 @@ class MonthReport(Report):
                 self._duties += _template.format(
                     **{
                         'content': self.content_parse_title(item),
+                        'summary': self.content_parse_richtext(item, u'评审、复盘、总结'),
                         'solve': self.content_parse_richtext(item, u'解决方法')
                     })
 
     def render_programming_work(self, database):
         _template = """
-            <li style="list-style-type: upper-roman;">{content}&nbsp;<span style="color:green;">{solve}</span></li>
+            <li style="list-style-type: upper-roman;">
+            <span style="font-weight: bold;">{content}</span>
+            &nbsp;<span style="color:green;">{solve}</span>
+            &nbsp;<span style="color:blue;">{summary}</span></li>
         """
 
         for node in database['results']:
@@ -820,12 +893,16 @@ class MonthReport(Report):
                 self._programming_tasks += _template.format(
                     **{
                         'content': self.content_parse_title(item),
+                        'summary': self.content_parse_richtext(item, u'评审、复盘、总结'),
                         'solve': self.content_parse_richtext(item, u'解决方法')
                     })
 
     def render_reading_share(self, database):
         _template = """
-            <li style="list-style-type: upper-roman;">{content}&nbsp;<span style="color:green;">{solve}</span></li>
+            <li style="list-style-type: upper-roman;">
+            <span style="font-weight: bold;">{content}</span>
+            &nbsp;<span style="color:green;">{solve}</span>
+            &nbsp;<span style="color:blue;">{summary}</span></li>
         """
         for node in database['results']:
             item = node['properties']
@@ -834,12 +911,16 @@ class MonthReport(Report):
                 self._reading_share += _template.format(
                     **{
                         'content': self.content_parse_title(item),
+                        'summary': self.content_parse_richtext(item, u'评审、复盘、总结'),
                         'solve': self.content_parse_richtext(item, u'解决方法')
                     })
 
     def render_directions(self, database):
         _template = """
-            <li style="list-style-type: upper-roman;">{content}&nbsp;<span style="color:green;">{solve}</span></li>
+            <li style="list-style-type: upper-roman;">
+            <span style="font-weight: bold;">{content}</span>
+            &nbsp;<span style="color:green;">{solve}</span>
+            &nbsp;<span style="color:blue;">{summary}</span></li>
         """
 
         for node in database['results']:
@@ -849,11 +930,11 @@ class MonthReport(Report):
                 self._directions += _template.format(
                     **{
                         'content': self.content_parse_title(item),
+                        'summary': self.content_parse_richtext(item, u'评审、复盘、总结'),
                         'solve': self.content_parse_richtext(item, u'解决方法')
                     })
 
-    def parse_week_tasks(self, database):
-        clslog.info("解析当月工作任务")
+    def parse_week_tasks(self, database, weekdatestr):
         self.render_technology(database)
         self.render_patent(database)
         self.render_review(database)
@@ -869,13 +950,13 @@ class MonthReport(Report):
             for t in title:
                 # Use BT-Panel timer task to trigger
                 if not force:
-                    if nowdate.day() != 1:
+                    if self.datetime_now.day() != 1:
                         clslog.warning(
                             "Month report will not trigger except the day 1")
                         break
 
                 plain_text = t['plain_text'].strip().replace(' → ', '~')
-                clslog.info(plain_text)
+
                 """Reading list"""
                 if plain_text == u"读书如斯":
                     self.render_reading_books(client, database)
@@ -891,25 +972,29 @@ class MonthReport(Report):
                     break
                 """Week report parse"""
                 plain_text_head = t['plain_text'][0:3]  # Filter for week tasks
-                value = re.compile(r'^[0-9]+[0-9]$')
+                value = re.compile(r'^[0-9][0-9][0-9]$')
                 if t['type'] == 'mention':
-                    enddate = datetime.datetime.fromisoformat(
+                    sdate = datetime.datetime.fromisoformat(
+                        t['mention']['date']['start'])
+                    edate = datetime.datetime.fromisoformat(
                         t['mention']['date']['end'])
-                    nowdate = datetime.datetime.now()
+                    weekdatestr = """{s}===>{e}""".format(**{
+                        's': sdate.strftime("%Y-%m-%d"),
+                        'e': edate.strftime("%Y-%m-%d")
+                    })
                     """Skip useless databases
                     """
-                    if plain_text_head == 'WRT':
+                    if sdate == edate:
                         break
                     if value.match(plain_text_head):
-                        if abs(enddate -
-                               nowdate) > datetime.timedelta(days=30):
-                            click.secho(
-                                "End:{} now:{} weekday:{} delta:{} Week report expired"
-                                .format(enddate, nowdate, nowdate.weekday(),
-                                        abs(enddate - nowdate)),
-                                fg='green')
+                        if self.week_belongs(sdate, edate):
+                            click.secho("解析{}工作任务".format(
+                                weekdatestr), fg='blue')
+                            self.parse_week_tasks(database, weekdatestr)
+                        else:
+                            clslog.info(
+                                "Week {} report N/A".format(weekdatestr))
                             break
-                        self.parse_week_tasks(database)
         except Exception as e:
             clslog.critical(e)
             traceback.print_exc(e)
@@ -1051,17 +1136,9 @@ def cli_month(client, clsconfig, remove, force, send):
         force (bool): Force generate or not
         send (bool): Send email or not
     """
-    nowdate = datetime.datetime.now()
-    if nowdate.day < 8:
-        mtitle = "{}({}{:02})".format(clsconfig.get('mr_title_prefix'),
-                                      nowdate.year, nowdate.month - 1)
-    else:
-        mtitle = "{}({}{:02})".format(clsconfig.get('mr_title_prefix'),
-                                      nowdate.year, nowdate.month)
-    click.secho("{}".format(mtitle), fg='blue')
-
-    mrp = MonthReport(mtitle)
-    mrp.init(mtitle, clsconfig.get('user'), clsconfig.get('department'))
+    mrp = MonthReport(clsconfig.get('mr_title_prefix'))
+    mrp.init(clsconfig.get('mr_title_prefix'), clsconfig.get(
+        'user'), clsconfig.get('department'))
     """Get week tasks, dump them into month table
     """
     for i in client.search()['results']:
@@ -1077,12 +1154,12 @@ def cli_month(client, clsconfig, remove, force, send):
                 clslog.error(e)
                 traceback.print_exc(e)
     try:
-        mrp.render_html(mtitle)
+        mrp.render_html(mrp.mtitle)
         study_title = "C(oncept)T(each)R(eview)S(implify)({}{:02})".format(
-            nowdate.year, nowdate.month)
+            mrp.now.year, mrp.now.month)
         study_email = mrp.render_study_html(study_title)
         if send:
-            mrp.send_email(clsconfig, mtitle)
+            mrp.send_email(clsconfig, mrp.mtitle)
             mrp.send_study_email(clsconfig, study_title, study_email)
         if remove:
             mrp.remove_files()
@@ -1126,7 +1203,7 @@ def cli_month(client, clsconfig, remove, force, send):
     allow_extra_args=True,
     ignore_unknown_options=True,
 ),
-               help="Notion Report Generator.")
+    help="Notion Report Generator.")
 def notion(rtype, config, excel, remove, force, send):
 
     clsconfig = ClslqConfigUnique(file=config)

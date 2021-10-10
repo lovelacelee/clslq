@@ -53,7 +53,6 @@ class Report(object):
     Args:
         object (wbname): Workbook name, generated document file name
     """
-
     def __init__(self, wbname):
         self.wb = Workbook()
         self.sht = self.wb.active
@@ -370,7 +369,7 @@ class WeekReport(Report):
                 if self.content_parse_type(item, 0) == u'工作计划':
                     plan += task_paln_template.format(
                         **{
-                            'type': str(i+1),
+                            'type': str(i + 1),
                             'title': self.content_parse_title(item),
                             'state': "-",
                             'problem': self.content_parse_richtext(
@@ -418,24 +417,33 @@ class MonthReport(Report):
             return False
 
     def week_belongs(self, sdate, edate):
-        if sdate >= (self._mdaystart - datetime.timedelta(days=1)) and edate <= (self._mdayend + datetime.timedelta(days=1)):
+        if sdate >= (self._mdaystart -
+                     datetime.timedelta(days=1)) and edate <= (
+                         self._mdayend + datetime.timedelta(days=1)):
             return True
         else:
             return False
 
-    def init(self, title, user, department):
+    def init(self, title, user, department, force):
 
         nowdate = self.datetime_now
-        if nowdate.month == 1:
-            lastmonth = 12
+        if force:
+            lastmonth = nowdate.month
+            self._mdaystart = nowdate - \
+                datetime.timedelta(days=(nowdate.day))
+            self._mdayend = nowdate
         else:
-            lastmonth = nowdate.month - 1
-        self._mdaystart = nowdate - \
-            datetime.timedelta(days=(nowdate.day + calendar.mdays[lastmonth]))
-        self._mdayend = nowdate - datetime.timedelta(days=nowdate.day)
+            if nowdate.month == 1:
+                lastmonth = 12
+            else:
+                lastmonth = nowdate.month - 1
+            self._mdaystart = nowdate - \
+                datetime.timedelta(days=(nowdate.day + calendar.mdays[lastmonth]))
+            self._mdayend = nowdate - datetime.timedelta(days=nowdate.day)
 
         clslog.critical("==月报检索{}==>{}周报及读书学习笔记==".format(
-            self._mdaystart.strftime("%Y%m%d"), self._mdayend.strftime("%Y%m%d")))
+            self._mdaystart.strftime("%Y%m%d"),
+            self._mdayend.strftime("%Y%m%d")))
 
         # 当月发上月报告
         mtitle = "{}({}{:02})".format(title, nowdate.year, lastmonth)
@@ -726,7 +734,6 @@ class MonthReport(Report):
             item = page['properties']
             date = datetime.datetime.fromisoformat(
                 item[u'收录日期']['date']['start'])
-
             """Skip useless databases
             """
             if self.belongs(date):
@@ -739,7 +746,6 @@ class MonthReport(Report):
             item = page['properties']
             date = datetime.datetime.fromisoformat(
                 item[u'收录日期']['date']['start'])
-
             """Skip useless databases
             """
             if self.belongs(date):
@@ -779,7 +785,8 @@ class MonthReport(Report):
                 self._technology += _template.format(
                     **{
                         'content': self.content_parse_title(item),
-                        'summary': self.content_parse_richtext(item, u'评审、复盘、总结'),
+                        'summary': self.content_parse_richtext(
+                            item, u'评审、复盘、总结'),
                         'solve': self.content_parse_richtext(item, u'解决方法')
                     })
 
@@ -798,7 +805,8 @@ class MonthReport(Report):
                 self._review += _template.format(
                     **{
                         'content': self.content_parse_title(item),
-                        'summary': self.content_parse_richtext(item, u'评审、复盘、总结'),
+                        'summary': self.content_parse_richtext(
+                            item, u'评审、复盘、总结'),
                         'solve': self.content_parse_richtext(item, u'解决方法')
                     })
 
@@ -817,7 +825,8 @@ class MonthReport(Report):
                 self._maintainance += _template.format(
                     **{
                         'content': self.content_parse_title(item),
-                        'summary': self.content_parse_richtext(item, u'评审、复盘、总结'),
+                        'summary': self.content_parse_richtext(
+                            item, u'评审、复盘、总结'),
                         'solve': self.content_parse_richtext(item, u'解决方法')
                     })
 
@@ -855,7 +864,8 @@ class MonthReport(Report):
                     **{
                         'content': self.content_parse_title(item),
                         'problem': self.content_parse_richtext(item, u'问题'),
-                        'summary': self.content_parse_richtext(item, u'评审、复盘、总结'),
+                        'summary': self.content_parse_richtext(
+                            item, u'评审、复盘、总结'),
                         'solve': self.content_parse_richtext(item, u'解决方法')
                     })
 
@@ -874,7 +884,8 @@ class MonthReport(Report):
                 self._duties += _template.format(
                     **{
                         'content': self.content_parse_title(item),
-                        'summary': self.content_parse_richtext(item, u'评审、复盘、总结'),
+                        'summary': self.content_parse_richtext(
+                            item, u'评审、复盘、总结'),
                         'solve': self.content_parse_richtext(item, u'解决方法')
                     })
 
@@ -893,7 +904,8 @@ class MonthReport(Report):
                 self._programming_tasks += _template.format(
                     **{
                         'content': self.content_parse_title(item),
-                        'summary': self.content_parse_richtext(item, u'评审、复盘、总结'),
+                        'summary': self.content_parse_richtext(
+                            item, u'评审、复盘、总结'),
                         'solve': self.content_parse_richtext(item, u'解决方法')
                     })
 
@@ -911,7 +923,8 @@ class MonthReport(Report):
                 self._reading_share += _template.format(
                     **{
                         'content': self.content_parse_title(item),
-                        'summary': self.content_parse_richtext(item, u'评审、复盘、总结'),
+                        'summary': self.content_parse_richtext(
+                            item, u'评审、复盘、总结'),
                         'solve': self.content_parse_richtext(item, u'解决方法')
                     })
 
@@ -930,7 +943,8 @@ class MonthReport(Report):
                 self._directions += _template.format(
                     **{
                         'content': self.content_parse_title(item),
-                        'summary': self.content_parse_richtext(item, u'评审、复盘、总结'),
+                        'summary': self.content_parse_richtext(
+                            item, u'评审、复盘、总结'),
                         'solve': self.content_parse_richtext(item, u'解决方法')
                     })
 
@@ -950,13 +964,12 @@ class MonthReport(Report):
             for t in title:
                 # Use BT-Panel timer task to trigger
                 if not force:
-                    if self.datetime_now.day() != 1:
+                    if self.datetime_now.day != 1:
                         clslog.warning(
                             "Month report will not trigger except the day 1")
                         break
 
                 plain_text = t['plain_text'].strip().replace(' → ', '~')
-
                 """Reading list"""
                 if plain_text == u"读书如斯":
                     self.render_reading_books(client, database)
@@ -978,18 +991,19 @@ class MonthReport(Report):
                         t['mention']['date']['start'])
                     edate = datetime.datetime.fromisoformat(
                         t['mention']['date']['end'])
-                    weekdatestr = """{s}===>{e}""".format(**{
-                        's': sdate.strftime("%Y-%m-%d"),
-                        'e': edate.strftime("%Y-%m-%d")
-                    })
+                    weekdatestr = """{s}===>{e}""".format(
+                        **{
+                            's': sdate.strftime("%Y-%m-%d"),
+                            'e': edate.strftime("%Y-%m-%d")
+                        })
                     """Skip useless databases
                     """
                     if sdate == edate:
                         break
                     if value.match(plain_text_head):
                         if self.week_belongs(sdate, edate):
-                            click.secho("解析{}工作任务".format(
-                                weekdatestr), fg='blue')
+                            click.secho("解析{}工作任务".format(weekdatestr),
+                                        fg='blue')
                             self.parse_week_tasks(database, weekdatestr)
                         else:
                             clslog.info(
@@ -1140,8 +1154,8 @@ def cli_month(client, clsconfig, remove, force, send):
         send (bool): Send email or not
     """
     mrp = MonthReport(clsconfig.get('mr_title_prefix'))
-    mrp.init(clsconfig.get('mr_title_prefix'), clsconfig.get(
-        'user'), clsconfig.get('department'))
+    mrp.init(clsconfig.get('mr_title_prefix'), clsconfig.get('user'),
+             clsconfig.get('department'), force)
     """Get week tasks, dump them into month table
     """
     for i in client.search()['results']:
@@ -1206,7 +1220,7 @@ def cli_month(client, clsconfig, remove, force, send):
     allow_extra_args=True,
     ignore_unknown_options=True,
 ),
-    help="Notion Report Generator.")
+               help="Notion Report Generator.")
 def notion(rtype, config, excel, remove, force, send):
 
     clsconfig = ClslqConfigUnique(file=config)

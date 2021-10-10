@@ -1172,8 +1172,12 @@ def cli_month(client, clsconfig, remove, force, send):
                 traceback.print_exc(e)
     try:
         mrp.render_html(mrp.mtitle)
-        study_title = "C(oncept)T(each)R(eview)S(implify)({}{:02})".format(
-            mrp.now.year, mrp.now.month)
+        if force:
+            study_title = "C(oncept)T(each)R(eview)S(implify)({}{:02})".format(
+                mrp.now.year, mrp.now.month)
+        else:
+            study_title = "C(oncept)T(each)R(eview)S(implify)({}{:02})".format(
+                mrp.now.year, mrp.now.month-1)
         study_email = mrp.render_study_html(study_title)
         if send:
             mrp.send_email(clsconfig, mrp.mtitle)

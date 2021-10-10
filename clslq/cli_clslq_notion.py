@@ -370,9 +370,9 @@ class WeekReport(Report):
                 if self.content_parse_type(item, 0) == u'工作计划':
                     plan += task_paln_template.format(
                         **{
-                            'type': self.content_parse_type(item, 0),
+                            'type': str(i+1),
                             'title': self.content_parse_title(item),
-                            'state': self.content_parse_state(item, 0),
+                            'state': "-",
                             'problem': self.content_parse_richtext(
                                 item, u'问题'),
                             'solve': self.content_parse_richtext(
@@ -1114,6 +1114,9 @@ def cli_week(client, clsconfig, excel, remove, force, send):
                         df = wrp.pandas_df_fill(database)
                     pandas.set_option('colheader_justify', 'center')
                     df.style.hide_index()  # Hide index col
+
+                    # with open("debug.json", "w") as file:
+                    #     file.write(json.dumps(i))
 
                     wrp.render_html(clsconfig, wtitle, database)
                     if send:

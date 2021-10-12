@@ -2,6 +2,7 @@ CHANGES
 =======
 
 * **202110**
+    * 1.2.4 Bug fixed.
     * 1.2.2 Notion based work report generator supported.
 
 * **202109**

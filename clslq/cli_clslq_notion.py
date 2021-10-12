@@ -67,6 +67,10 @@ class Report(object):
         self.wbname = wbname
         self.datetime_now = datetime.datetime.now()
 
+    @property
+    def now(self):
+        return self.datetime_now
+
     def render_html_without_inline_css(self, title, df):
         """Render html form template, use pandas
 
@@ -166,6 +170,14 @@ class Report(object):
 
 
 class WeekReport(Report):
+    def week_belongs(self, sdate, edate):
+        if self.datetime_now >= (sdate - datetime.timedelta(
+                days=1)) and self.datetime_now <= (edate +
+                                                   datetime.timedelta(days=1)):
+            return True
+        else:
+            return False
+
     def set_worksheet_head(self, head):
         """Set sheet head
 
@@ -493,10 +505,6 @@ class MonthReport(Report):
             raise ValueError("mtitle must be an string")
         else:
             self._title = xtitle
-
-    @property
-    def now(self):
-        return self.datetime_now
 
     def content_parse_title(self, item):
         result = None
@@ -1102,20 +1110,26 @@ def cli_week(client, clsconfig, excel, remove, force, send):
                         break
                     enddate = datetime.datetime.fromisoformat(
                         t['mention']['date']['end'])
-                    nowdate = datetime.datetime.now()
+                    startdate = datetime.datetime.fromisoformat(
+                        t['mention']['date']['start'])
+
+                    wrp = WeekReport(plain_text)
+
                     # Use BT-Panel timer task to trigger
                     if not force:
-                        if nowdate.weekday() != 5:  # 0~6 means Monday~Sunday
+                        if wrp.now.weekday() != 5:  # 0~6 means Monday~Sunday
                             clslog.warning("Today is not Saturday")
                             break
-                    if abs(enddate - nowdate) > datetime.timedelta(days=5):
+                    if not wrp.week_belongs(startdate, enddate):
                         click.secho(
-                            "End:{} now:{} weekday:{} delta:{} Week report expired"
-                            .format(enddate, nowdate, nowdate.weekday(),
-                                    abs(enddate - nowdate)),
+                            "[{}~{}] today:{}[weekday:{}] gap:{}days Week report expired"
+                            .format(startdate.strftime("%Y-%m-%d"),
+                                    enddate.strftime("%Y-%m-%d"),
+                                    wrp.now.strftime("%Y-%m-%d"),
+                                    wrp.now.weekday(),
+                                    abs(startdate - wrp.now).days),
                             fg='green')
                         break
-                    wrp = WeekReport(plain_text)
                     wtitle = "{}({})".format(clsconfig.get('wr_title_prefix'),
                                              plain_text)
 
@@ -1177,9 +1191,10 @@ def cli_month(client, clsconfig, remove, force, send):
                 mrp.now.year, mrp.now.month)
         else:
             study_title = "C(oncept)T(each)R(eview)S(implify)({}{:02})".format(
-                mrp.now.year, mrp.now.month-1)
+                mrp.now.year, mrp.now.month - 1)
         study_email = mrp.render_study_html(study_title)
-        if send:
+        clslog.info("Month report email only sent when mday [1~5]")
+        if send and mrp.now.day >= 1 and mrp.now.day <= 5:
             mrp.send_email(clsconfig, mrp.mtitle)
             mrp.send_study_email(clsconfig, study_title, study_email)
         if remove:

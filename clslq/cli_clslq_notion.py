@@ -19,12 +19,15 @@ import string
 import time
 import json
 import os
+import requests
+import base64
 import re
 import traceback
 import pandas
 import calendar
 # Support email
 import smtplib
+from io import BytesIO
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.header import Header
@@ -171,9 +174,12 @@ class Report(object):
 
 class WeekReport(Report):
     def week_belongs(self, sdate, edate):
+        s = sdate - datetime.timedelta(days=1)
+        e = edate + datetime.timedelta(days=1)
+        clslog.info("[{} {}] {}".format(s, e, self.datetime_now))
         if self.datetime_now >= (sdate - datetime.timedelta(
-                days=1)) and self.datetime_now <= (edate +
-                                                   datetime.timedelta(days=1)):
+                days=2)) and self.datetime_now <= (edate +
+                                                   datetime.timedelta(days=2)):
             return True
         else:
             return False
@@ -624,13 +630,30 @@ class MonthReport(Report):
         # clslog.info(last)
         return last
 
+    def img_url_to_base64(self, url):
+        try:
+            imgtype = os.path.splitext(url)[1].split('?')[0].replace('.', '/')
+            response = requests.get(url)
+            imgbase64 = base64.b64encode(BytesIO(response.content).read())
+            return "data:image{};base64,".format(imgtype) + imgbase64.decode(
+                "utf-8")
+        except Exception as e:
+            clslog.critical(e)
+            return None
+
     def render_block_items(self, client, page):
         page_html_tags = str('')
         p_template = """
             <p style="text-indent: 2em;">{p}</p>
         """
         img_template = """
-            <img src="{img}"></img>
+            <div style="width:auto;border: 1px dashed #ccc;display: table-cell;
+                vertical-align: middle;text-align: center; 
+                box-shadow: 0px 0px 5px 5px rgba(10,10,10,0.2);
+                -moz-box-shadow: 0px 0px 5px 5px rgba(10,10,10,0.2);
+                -webkit-box-shadow: 0px 0px 5px 5px rgba(10,10,10,0.2);" >
+                <img style="width: 80%;" src="{img}"></img>
+            </div>
         """
 
         page_id = page['id']
@@ -667,8 +690,14 @@ class MonthReport(Report):
                 page_html_tags += p_template.format(**{'p': text.strip()})
 
             elif b['type'] == 'image':
-                page_html_tags += img_template.format(
-                    **{'img': b['image']['file']['url']})
+                url = b['image']['file']['url']
+                imgsrc = self.img_url_to_base64(url)
+                clslog.info(imgsrc[0:64])
+                if imgsrc:
+                    page_html_tags += img_template.format(**{'img': imgsrc})
+                else:
+                    page_html_tags += img_template.format(
+                        **{'img': b['image']['file']['url']})
             elif b['type'] == 'numbered_list_item':
                 numbered_list += self.render_block_list(client, b, 'ol')
             elif b['type'] == 'bulleted_list_item':
@@ -719,7 +748,7 @@ class MonthReport(Report):
                 text = str('')
                 for t in b[b['type']]['caption']:
                     text += t['plain_text']
-                page_html_tags += """<a href="{bookmark}" target="_blank">{caption}</a>""".format(
+                page_html_tags += """<a href="{bookmark}" target="_blank">{caption}</a><br/>""".format(
                     **{
                         'bookmark': b[b['type']]['url'],
                         'caption': text.strip()
@@ -757,11 +786,15 @@ class MonthReport(Report):
             """Skip useless databases
             """
             if self.belongs(date):
-                self._study_list += """<a href="{url}" target="_blank"><h3>{title}</h3></a>""".format(
-                    **{
-                        'title': self.content_parse_title(item),
-                        'url': item[u'链接']['url']
-                    })
+                title_url = item[u'链接']['url']
+                self._study_list += """<h1>{title}</h1><br/>""".format(
+                    **{'title': self.content_parse_title(item)})
+                if title_url:
+                    self._study_list += """<a href="{url}" target="_blank"><p>{title}</p></a><br/>""".format(
+                        **{
+                            'title': "扩展阅读",
+                            'url': title_url
+                        })
 
                 self._study_list += self.render_block_items(client, page)
         # clslog.info(self._study_list)
@@ -1170,6 +1203,13 @@ def cli_month(client, clsconfig, remove, force, send):
     mrp = MonthReport(clsconfig.get('mr_title_prefix'))
     mrp.init(clsconfig.get('mr_title_prefix'), clsconfig.get('user'),
              clsconfig.get('department'), force)
+    # Use BT-Panel timer task to trigger
+    if not force:
+        if not (mrp.now.day >= 1 and mrp.now.day <= 5):
+            clslog.warning(
+                "Month report email only sent when mday [1~5] or in force mode"
+            )
+            return
     """Get week tasks, dump them into month table
     """
     for i in client.search()['results']:
@@ -1193,8 +1233,8 @@ def cli_month(client, clsconfig, remove, force, send):
             study_title = "C(oncept)T(each)R(eview)S(implify)({}{:02})".format(
                 mrp.now.year, mrp.now.month - 1)
         study_email = mrp.render_study_html(study_title)
-        clslog.info("Month report email only sent when mday [1~5]")
-        if send and mrp.now.day >= 1 and mrp.now.day <= 5:
+
+        if send:
             mrp.send_email(clsconfig, mrp.mtitle)
             mrp.send_study_email(clsconfig, study_title, study_email)
         if remove:

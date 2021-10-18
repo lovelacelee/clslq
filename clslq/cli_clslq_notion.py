@@ -56,6 +56,7 @@ class Report(object):
     Args:
         object (wbname): Workbook name, generated document file name
     """
+
     def __init__(self, wbname):
         self.wb = Workbook()
         self.sht = self.wb.active
@@ -131,7 +132,8 @@ class Report(object):
             smtp.quit()
             smtp.close()
         except Exception as e:
-            clslog.critical(e)
+            clslog.critical(
+                "Exception @{}: {}".format(e.__traceback__.tb_lineno, e))
 
     def send_email(self, config, title):
         """Send report email to receivers defined in .clslq.json
@@ -162,7 +164,8 @@ class Report(object):
             smtp.quit()
             smtp.close()
         except Exception as e:
-            clslog.critical(e)
+            clslog.critical(
+                "Exception @{}: {}".format(e.__traceback__.tb_lineno, e))
 
     def remove_files(self):
         """Removes all generated files"""
@@ -456,7 +459,8 @@ class MonthReport(Report):
             else:
                 lastmonth = nowdate.month - 1
             self._mdaystart = nowdate - \
-                datetime.timedelta(days=(nowdate.day + calendar.mdays[lastmonth]))
+                datetime.timedelta(
+                    days=(nowdate.day + calendar.mdays[lastmonth]))
             self._mdayend = nowdate - datetime.timedelta(days=nowdate.day)
 
         clslog.critical("==月报检索{}==>{}周报及读书学习笔记==".format(
@@ -564,66 +568,262 @@ class MonthReport(Report):
         finally:
             return result.replace('\n', ' ')
 
-    def block_list_children(self, client, block, tag, level=1):
-        """"""
+    def block_parse_table_cell_properties(self, properties, key):
+        _type = properties[key]['type']
+        _result = ''
+        def date_valid(x): return x if x is not None else ""
+        def num_valid(x): return str(x) if x is not None else ""
+        try:
+            if _type == 'rich_text' or _type == 'title':
+                for i in properties[key][_type]:
+                    _result += i['plain_text']
+
+            elif _type == 'multi_select':
+                for i in properties[key][_type]:
+                    _result += """<span style="color:{color};">{content}</span>""".format(
+                        **{'color': i['color'], 'content': i['name']})
+            elif _type == 'select':
+                i = properties[key][_type]
+                _result += """<span style="color:{color};">{content}</span>""".format(
+                    **{'color': i['color'], 'content': i['name']})
+            elif _type == 'url':
+                _result += """<a href="{url}" target="_blank">{text}</a>""".format(
+                    **{'url': properties[key][_type], 'text': properties[key][_type]})
+            elif _type == 'date':
+                _result += """{s} {e}""".format(
+                    **{'s': date_valid(properties[key][_type]['start']), 'e': date_valid(properties[key][_type]['end'])})
+            elif _type == 'number':
+                _result += num_valid(properties[key][_type])
+            elif _type == 'files':
+                for f in properties[key][_type]:
+
+                    if 'file' in f:
+                        url = f['file']['url']
+                    elif 'external' in f:
+                        url = f['external']['url']
+
+                    img_template = """
+                        <img style="width: 200px;" src="{img}"></img>
+                    """
+                    imgsrc = self.img_url_to_base64(url)
+                    clslog.info(imgsrc[0:32]+'...')
+                    if imgsrc:
+                        _result += img_template.format(
+                            **{'img': imgsrc})
+                    else:
+                        _result += img_template.format(
+                            **{'img': url})
+            else:
+                clslog.warning("Unsupported: {}".format(properties[key]))
+        except Exception as e:
+            clslog.critical(
+                "Exception @{}: {}".format(e.__traceback__.tb_lineno, e))
+
+        return _result
+
+    def block_parse_table(self, client, b):
+        database = client.databases.query(b['id'])
+        table = str('<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse; color: #3d3b4f; background-color: #fff; border: 1px solid #cfcfcf; box-shadow: 0 0px 6px rgba(0, 0, 0, 0.1); margin-bottom: 20px; font-size:13px;">')
+        heads = []
+        if len(database['results']):
+            table += '<thead>'
+            for h in database['results'][0]['properties']:
+                heads.append(h)
+            for hi in reversed(heads):
+                table += """<th height="19" width="107"
+                          style="border: 0.5pt solid #cfcfcf; width: 107pt; height: 14pt; padding-top: 1px; padding-right: 1px; padding-left: 1px; font-size: 11pt; font-family: 宋体; vertical-align: middle; text-align: center;">{h}</th>""".format(**{'h': hi})
+            table += '</thead>'
+            table += '<tbody>'
+            for i in database['results']:
+                p = i['properties']
+                table += '<tr height="19" style="height:14.0pt;background-color:rgb(253, 233, 217)">'
+                for hi in reversed(heads):
+                    table += """<td height="19" width="107"
+                          style="border: 0.5pt solid #cfcfcf; width: 107pt; height: 14pt; padding-top: 1px; padding-right: 1px; padding-left: 1px; font-size: 11pt; font-family: 宋体; vertical-align: middle; text-align: center;">{v}</td>""".format(
+                        **{'v': self.block_parse_table_cell_properties(p, hi)})
+                table += '</tr>'
+            table += '</tbody>'
+        table += str('</table>')
+        return table
+
+    def block_common_types(self, client, b):
+        children = str('')
+
+        img_template = """
+            <div style="width:100%;border: 1px dashed #ccc;
+                vertical-align: middle;text-align: center; 
+                box-shadow: 0px 0px 5px 5px rgba(10,10,10,0.2);
+                -moz-box-shadow: 0px 0px 5px 5px rgba(10,10,10,0.2);
+                -webkit-box-shadow: 0px 0px 5px 5px rgba(10,10,10,0.2);" >
+                <img style="width: 80%; margin-top: 50px; margin-bottom: 50px;" src="{img}"></img>
+            </div>
+        """
+        try:
+            if b['type'] == "image":
+                try:
+                    if 'file' in b['image']:
+                        url = b['image']['file']['url']
+                    elif 'external' in b['image']:
+                        url = b['image']['external']['url']
+
+                    imgsrc = self.img_url_to_base64(url)
+                    clslog.info(imgsrc[0:32]+'...')
+                    if imgsrc:
+                        children += img_template.format(
+                            **{'img': imgsrc})
+                    else:
+                        children += img_template.format(
+                            **{'img': url})
+                except Exception as e:
+                    clslog.critical(
+                        "Exception @{}: {}".format(e.__traceback__.tb_lineno, e))
+                    clslog.info(b)
+
+            elif b['type'] == "paragraph":
+                text = str('')
+                for t in b['paragraph']['text']:
+                    text += t['plain_text']
+                children += """<p>{p}</p>""".format(**{'p': text.strip()})
+
+            elif b['type'] == 'heading_1':
+                text = str('')
+                for t in b[b['type']]['text']:
+                    text += t['plain_text']
+                children += """<h1>{head}</h1>""".format(
+                    **{'head': text.strip()})
+            elif b['type'] == 'heading_2':
+                text = str('')
+                for t in b[b['type']]['text']:
+                    text += t['plain_text']
+                children += """<h2>{head}</h2>""".format(
+                    **{'head': text.strip()})
+            elif b['type'] == 'heading_3':
+                text = str('')
+                for t in b[b['type']]['text']:
+                    text += t['plain_text']
+                children += """<h3>{head}</h3>""".format(
+                    **{'head': text.strip()})
+            elif b['type'] == 'heading_4':
+                text = str('')
+                for t in b[b['type']]['text']:
+                    text += t['plain_text']
+                children += """<h4>{head}</h4>""".format(
+                    **{'head': text.strip()})
+            elif b['type'] == 'heading_5':
+                text = str('')
+                for t in b[b['type']]['text']:
+                    text += t['plain_text']
+                children += """<h5>{head}</h5>""".format(
+                    **{'head': text.strip()})
+            elif b['type'] == 'heading_6':
+                text = str('')
+                for t in b[b['type']]['text']:
+                    text += t['plain_text']
+                children += """<h6>{head}</h6>""".format(
+                    **{'head': text.strip()})
+            elif b['type'] == 'code':
+                text = str('')
+                for t in b[b['type']]['text']:
+                    text += t['plain_text']
+                children += """<pre style="background-color: f5f5f5"><code>{code}</code></pre>""".format(
+                    **{'code': text.strip()})
+            elif b['type'] == 'bookmark':
+                text = str('')
+                for t in b[b['type']]['caption']:
+                    text += t['plain_text']
+                children += """<a href="{bookmark}" target="_blank">{caption}</a><br/>""".format(
+                    **{
+                        'bookmark': b[b['type']]['url'],
+                        'caption': text.strip()
+                    })
+            elif b['type'] == 'child_database':
+                children += self.block_parse_table(client, b)
+            elif b['type'] == 'callout':
+                text = str('')
+                for t in b[b['type']]['text']:
+                    text += t['plain_text']
+                children += """<pre style="background-color: f5f5f5"><code>{icon}{code}</code></pre>""".format(
+                    **{'code': text.strip(),
+                       'icon':  b[b['type']]['icon']['emoji']})
+            else:
+                clslog.warning("An unsupported type was received")
+                clslog.info(b)
+        except Exception as e:
+            clslog.critical(
+                "Exception @{}: {}".format(e.__traceback__.tb_lineno, e))
+        return children
+
+    def block_list_children(self, client, block, tag, level=0):
+        """Recursive function"""
         bs = client.blocks.children.list(block['id'])
         children = str('')
         if tag == 'ol':
-            if level == 1:
-                children = "<" + tag + " type=\"A\">"
-            elif level == 2:
-                children = "<" + tag + " type=\"a\">"
-            elif level == 3:
-                children = "<" + tag + " type=\"I\">"
-            elif level == 4:
-                children = "<" + tag + " type=\"i\">"
-            else:
+            if level % 4 == 0:
                 children = "<" + tag + " type=\"1\">"
+            elif level % 4 == 1:
+                children = "<" + tag + " type=\"A\">"
+            elif level % 4 == 2:
+                children = "<" + tag + " type=\"a\">"
+            elif level % 4 == 3:
+                children = "<" + tag + " type=\"I\">"
+            else:
+                children = "<" + tag + " type=\"i\">"
         elif tag == 'ul':
-            if level == 1:
-                children = "<" + tag + " style=\"list-style-type:circle\">"
-            elif level == 2:
-                children = "<" + tag + " style=\"list-style-type:square\">"
-            elif level == 3:
+            if level % 4 == 0:
+                children = "<" + tag + " style=\"list-style-type:\1F44D\">"
+            elif level % 4 == 1:
+                children = "<" + tag + " style=\"list-style-type:\1F44D\">"
+            elif level % 4 == 2:
                 children = "<" + tag + " style=\"list-style-type:disc\">"
-            elif level == 4:
-                children = "<" + tag + " style=\"list-style-type:circle\">"
+            elif level % 4 == 3:
+                children = "<" + tag + " style=\"list-style-type:\1F44D\">"
             else:
                 children = "<" + tag + " style=\"none\">"
 
-        for b in bs['results']:
-            plain_text = str('')
-            if b['type'] == "bulleted_list_item":
+        for i in range(len(bs['results'])):
+            b = bs['results'][i]
+
+            if b['type'] == 'numbered_list_item' or b['type'] == 'bulleted_list_item':
+
+                plain_text = str('')
                 for t in b[b['type']]['text']:
                     plain_text += t['plain_text']
                 if b['has_children']:
                     level += 1
+                    new_children = str('')
+                    if b['type'] == 'bulleted_list_item':
+                        new_children += self.block_list_children(
+                            client, b, 'ul', level)
+                    elif b['type'] == 'numbered_list_item':
+                        new_children += self.block_list_children(
+                            client, b, 'ol', level)
                     children += """<li>{item}{children}</li>""".format(
                         **{
                             'item':
                             plain_text,
                             'children':
-                            self.block_list_children(client, b, tag, level)
+                            new_children
                         })
-
                 else:
                     children += """<li>{item}</li>""".format(
                         **{'item': plain_text})
-            elif b['type'] == "image":
-                children += """<img src="{url}"></img>""".format(
-                    **{'url': b[b['type']]['file']['url']})
+            else:
+                children += self.block_common_types(client, b)
+
         children += "</" + tag + ">"
         return children
 
-    def render_block_list(self, client, block, tag):
+    def render_block_list(self, client, block, tag, level):
+        """Recurisve <ol><ul><li> tags management"""
         plain_text = str('')
         for t in block[block['type']]['text']:
             plain_text += t['plain_text']
         if block['has_children']:
+            level += 1
             last = """<li>{item}{children}</li>""".format(
                 **{
                     'item': plain_text,
-                    'children': self.block_list_children(client, block, tag)
+                    'children': self.block_list_children(client, block, tag, level)
                 })
         else:
             last = """<li>{item}</li>""".format(**{'item': plain_text})
@@ -638,7 +838,8 @@ class MonthReport(Report):
             return "data:image{};base64,".format(imgtype) + imgbase64.decode(
                 "utf-8")
         except Exception as e:
-            clslog.critical(e)
+            clslog.critical(
+                "Exception @{}: {}".format(e.__traceback__.tb_lineno, e))
             return None
 
     def render_block_items(self, client, page):
@@ -683,76 +884,26 @@ class MonthReport(Report):
                 page_html_tags += """<ul style="list-style-type:disc">{list}</ul>""".format(
                     **{'list': bulleted_list})
                 bulleted_list = str('')
-            if b['type'] == 'paragraph':
+            if b['type'] == 'numbered_list_item':
+                numbered_list += self.render_block_list(client, b, 'ol', 0)
+            elif b['type'] == 'bulleted_list_item':
+                bulleted_list += self.render_block_list(client, b, 'ul', 0)
+
+            elif b['type'] == 'paragraph':
                 text = str('')
                 for t in b['paragraph']['text']:
                     text += t['plain_text']
                 page_html_tags += p_template.format(**{'p': text.strip()})
-
-            elif b['type'] == 'image':
-                url = b['image']['file']['url']
-                imgsrc = self.img_url_to_base64(url)
-                clslog.info(imgsrc[0:64])
-                if imgsrc:
-                    page_html_tags += img_template.format(**{'img': imgsrc})
-                else:
-                    page_html_tags += img_template.format(
-                        **{'img': b['image']['file']['url']})
-            elif b['type'] == 'numbered_list_item':
-                numbered_list += self.render_block_list(client, b, 'ol')
-            elif b['type'] == 'bulleted_list_item':
-                bulleted_list += self.render_block_list(client, b, 'ul')
-            elif b['type'] == 'heading_1':
-                text = str('')
-                for t in b[b['type']]['text']:
-                    text += t['plain_text']
-                page_html_tags += """<h1>{head}</h1>""".format(
-                    **{'head': text.strip()})
-            elif b['type'] == 'heading_2':
-                text = str('')
-                for t in b[b['type']]['text']:
-                    text += t['plain_text']
-                page_html_tags += """<h2>{head}</h2>""".format(
-                    **{'head': text.strip()})
-            elif b['type'] == 'heading_3':
-                text = str('')
-                for t in b[b['type']]['text']:
-                    text += t['plain_text']
-                page_html_tags += """<h3>{head}</h3>""".format(
-                    **{'head': text.strip()})
-            elif b['type'] == 'heading_4':
-                text = str('')
-                for t in b[b['type']]['text']:
-                    text += t['plain_text']
-                page_html_tags += """<h4>{head}</h4>""".format(
-                    **{'head': text.strip()})
-            elif b['type'] == 'heading_5':
-                text = str('')
-                for t in b[b['type']]['text']:
-                    text += t['plain_text']
-                page_html_tags += """<h5>{head}</h5>""".format(
-                    **{'head': text.strip()})
-            elif b['type'] == 'heading_6':
-                text = str('')
-                for t in b[b['type']]['text']:
-                    text += t['plain_text']
-                page_html_tags += """<h6>{head}</h6>""".format(
-                    **{'head': text.strip()})
-            elif b['type'] == 'code':
-                text = str('')
-                for t in b[b['type']]['text']:
-                    text += t['plain_text']
-                page_html_tags += """<pre><code>{code}</code></pre>""".format(
-                    **{'code': text.strip()})
-            elif b['type'] == 'bookmark':
-                text = str('')
-                for t in b[b['type']]['caption']:
-                    text += t['plain_text']
-                page_html_tags += """<a href="{bookmark}" target="_blank">{caption}</a><br/>""".format(
-                    **{
-                        'bookmark': b[b['type']]['url'],
-                        'caption': text.strip()
-                    })
+            elif b['type'] == 'image' \
+                or b['type'] == 'heading_1' \
+                or b['type'] == 'heading_2' \
+                or b['type'] == 'heading_3' \
+                or b['type'] == 'heading_4' \
+                or b['type'] == 'heading_5' \
+                or b['type'] == 'heading_6' \
+                or b['type'] == 'code' \
+                    or b['type'] == 'bookmark':
+                page_html_tags += self.block_common_types(client, b)
             else:
                 clslog.warning("Type:{}".format(b['type']))
                 bs = client.blocks.retrieve(b['id'])
@@ -1051,7 +1202,8 @@ class MonthReport(Report):
                                 "Week {} report N/A".format(weekdatestr))
                             break
         except Exception as e:
-            clslog.critical(e)
+            clslog.critical(
+                "Exception @{}: {}".format(e.__traceback__.tb_lineno, e))
             traceback.print_exc(e)
 
     def render_html(self, title):
@@ -1279,7 +1431,7 @@ def cli_month(client, clsconfig, remove, force, send):
     allow_extra_args=True,
     ignore_unknown_options=True,
 ),
-               help="Notion Report Generator.")
+    help="Notion Report Generator.")
 def notion(rtype, config, excel, remove, force, send):
 
     clsconfig = ClslqConfigUnique(file=config)

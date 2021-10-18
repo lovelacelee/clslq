@@ -2,6 +2,7 @@ CHANGES
 =======
 
 * **202110**
+    * 1.2.6 Bugs fixed.
     * 1.2.5 Images transfered to base64 format rather than url refered when Email render.
     * 1.2.4 Bug fixed.
     * 1.2.2 Notion based work report generator supported.

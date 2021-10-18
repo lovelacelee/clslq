@@ -188,6 +188,9 @@ class PublishCommand(Command):
                   version)
 
     def run(self):
+        workdir = os.path.dirname(os.path.abspath(__file__))
+        print("distclean work root:{}".format(workdir))
+        rmdir(workdir)
         """Run command."""
         os.system("python -m pip install -U setuptools twine wheel")
         os.system("python setup.py sdist bdist_wheel")

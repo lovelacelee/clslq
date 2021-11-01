@@ -448,19 +448,16 @@ class MonthReport(Report):
     def init(self, title, user, department, force):
 
         nowdate = self.datetime_now
+        if nowdate.month == 1:
+            lastmonth = 12
+        else:
+            lastmonth = nowdate.month - 1
+        self._mdaystart = nowdate - \
+            datetime.timedelta(
+                days=(nowdate.day + calendar.mdays[lastmonth]))
         if force:
-            lastmonth = nowdate.month
-            self._mdaystart = nowdate - \
-                datetime.timedelta(days=(nowdate.day))
             self._mdayend = nowdate
         else:
-            if nowdate.month == 1:
-                lastmonth = 12
-            else:
-                lastmonth = nowdate.month - 1
-            self._mdaystart = nowdate - \
-                datetime.timedelta(
-                    days=(nowdate.day + calendar.mdays[lastmonth]))
             self._mdayend = nowdate - datetime.timedelta(days=nowdate.day)
 
         clslog.critical("==月报检索{}==>{}周报及读书学习笔记==".format(

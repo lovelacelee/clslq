@@ -10,5 +10,5 @@ MIT License Copyright (c) 2008~2021 Connard Lee
 '''
 
 
-CLSLQ_Version='1.2.7'
+CLSLQ_Version='1.2.8'
 __doc__ = CLSLQ_Version

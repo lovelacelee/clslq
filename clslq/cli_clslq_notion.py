@@ -56,7 +56,6 @@ class Report(object):
     Args:
         object (wbname): Workbook name, generated document file name
     """
-
     def __init__(self, wbname):
         self.wb = Workbook()
         self.sht = self.wb.active
@@ -132,8 +131,8 @@ class Report(object):
             smtp.quit()
             smtp.close()
         except Exception as e:
-            clslog.critical(
-                "Exception @{}: {}".format(e.__traceback__.tb_lineno, e))
+            clslog.critical("Exception @{}: {}".format(
+                e.__traceback__.tb_lineno, e))
 
     def send_email(self, config, title):
         """Send report email to receivers defined in .clslq.json
@@ -164,8 +163,8 @@ class Report(object):
             smtp.quit()
             smtp.close()
         except Exception as e:
-            clslog.critical(
-                "Exception @{}: {}".format(e.__traceback__.tb_lineno, e))
+            clslog.critical("Exception @{}: {}".format(
+                e.__traceback__.tb_lineno, e))
 
     def remove_files(self):
         """Removes all generated files"""
@@ -568,8 +567,13 @@ class MonthReport(Report):
     def block_parse_table_cell_properties(self, properties, key):
         _type = properties[key]['type']
         _result = ''
-        def date_valid(x): return x if x is not None else ""
-        def num_valid(x): return str(x) if x is not None else ""
+
+        def date_valid(x):
+            return x if x is not None else ""
+
+        def num_valid(x):
+            return str(x) if x is not None else ""
+
         try:
             if _type == 'rich_text' or _type == 'title':
                 for i in properties[key][_type]:
@@ -578,17 +582,29 @@ class MonthReport(Report):
             elif _type == 'multi_select':
                 for i in properties[key][_type]:
                     _result += """<span style="color:{color};">{content}</span>""".format(
-                        **{'color': i['color'], 'content': i['name']})
+                        **{
+                            'color': i['color'],
+                            'content': i['name']
+                        })
             elif _type == 'select':
                 i = properties[key][_type]
                 _result += """<span style="color:{color};">{content}</span>""".format(
-                    **{'color': i['color'], 'content': i['name']})
+                    **{
+                        'color': i['color'],
+                        'content': i['name']
+                    })
             elif _type == 'url':
                 _result += """<a href="{url}" target="_blank">{text}</a>""".format(
-                    **{'url': properties[key][_type], 'text': properties[key][_type]})
+                    **{
+                        'url': properties[key][_type],
+                        'text': properties[key][_type]
+                    })
             elif _type == 'date':
                 _result += """{s} {e}""".format(
-                    **{'s': date_valid(properties[key][_type]['start']), 'e': date_valid(properties[key][_type]['end'])})
+                    **{
+                        's': date_valid(properties[key][_type]['start']),
+                        'e': date_valid(properties[key][_type]['end'])
+                    })
             elif _type == 'number':
                 _result += num_valid(properties[key][_type])
             elif _type == 'files':
@@ -603,24 +619,24 @@ class MonthReport(Report):
                         <img style="width: 200px;" src="{img}"></img>
                     """
                     imgsrc = self.img_url_to_base64(url)
-                    clslog.info(imgsrc[0:32]+'...')
+                    clslog.info(imgsrc[0:32] + '...')
                     if imgsrc:
-                        _result += img_template.format(
-                            **{'img': imgsrc})
+                        _result += img_template.format(**{'img': imgsrc})
                     else:
-                        _result += img_template.format(
-                            **{'img': url})
+                        _result += img_template.format(**{'img': url})
             else:
                 clslog.warning("Unsupported: {}".format(properties[key]))
         except Exception as e:
-            clslog.critical(
-                "Exception @{}: {}".format(e.__traceback__.tb_lineno, e))
+            clslog.critical("Exception @{}: {}".format(
+                e.__traceback__.tb_lineno, e))
 
         return _result
 
     def block_parse_table(self, client, b):
         database = client.databases.query(b['id'])
-        table = str('<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse; color: #3d3b4f; background-color: #fff; border: 1px solid #cfcfcf; box-shadow: 0 0px 6px rgba(0, 0, 0, 0.1); margin-bottom: 20px; font-size:13px;">')
+        table = str(
+            '<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse; color: #3d3b4f; background-color: #fff; border: 1px solid #cfcfcf; box-shadow: 0 0px 6px rgba(0, 0, 0, 0.1); margin-bottom: 20px; font-size:13px;">'
+        )
         heads = []
         if len(database['results']):
             table += '<thead>'
@@ -628,7 +644,8 @@ class MonthReport(Report):
                 heads.append(h)
             for hi in reversed(heads):
                 table += """<th height="19" width="107"
-                          style="border: 0.5pt solid #cfcfcf; width: 107pt; height: 14pt; padding-top: 1px; padding-right: 1px; padding-left: 1px; font-size: 11pt; font-family: 宋体; vertical-align: middle; text-align: center;">{h}</th>""".format(**{'h': hi})
+                          style="border: 0.5pt solid #cfcfcf; width: 107pt; height: 14pt; padding-top: 1px; padding-right: 1px; padding-left: 1px; font-size: 11pt; font-family: 宋体; vertical-align: middle; text-align: center;">{h}</th>""".format(
+                    **{'h': hi})
             table += '</thead>'
             table += '<tbody>'
             for i in database['results']:
@@ -664,16 +681,14 @@ class MonthReport(Report):
                         url = b['image']['external']['url']
 
                     imgsrc = self.img_url_to_base64(url)
-                    clslog.info(imgsrc[0:32]+'...')
+                    clslog.info(imgsrc[0:32] + '...')
                     if imgsrc:
-                        children += img_template.format(
-                            **{'img': imgsrc})
+                        children += img_template.format(**{'img': imgsrc})
                     else:
-                        children += img_template.format(
-                            **{'img': url})
+                        children += img_template.format(**{'img': url})
                 except Exception as e:
-                    clslog.critical(
-                        "Exception @{}: {}".format(e.__traceback__.tb_lineno, e))
+                    clslog.critical("Exception @{}: {}".format(
+                        e.__traceback__.tb_lineno, e))
                     clslog.info(b)
 
             elif b['type'] == "paragraph":
@@ -740,14 +755,16 @@ class MonthReport(Report):
                 for t in b[b['type']]['text']:
                     text += t['plain_text']
                 children += """<pre style="background-color: f5f5f5"><code>{icon}{code}</code></pre>""".format(
-                    **{'code': text.strip(),
-                       'icon':  b[b['type']]['icon']['emoji']})
+                    **{
+                        'code': text.strip(),
+                        'icon': b[b['type']]['icon']['emoji']
+                    })
             else:
                 clslog.warning("An unsupported type was received")
                 clslog.info(b)
         except Exception as e:
-            clslog.critical(
-                "Exception @{}: {}".format(e.__traceback__.tb_lineno, e))
+            clslog.critical("Exception @{}: {}".format(
+                e.__traceback__.tb_lineno, e))
         return children
 
     def block_list_children(self, client, block, tag, level=0):
@@ -780,7 +797,8 @@ class MonthReport(Report):
         for i in range(len(bs['results'])):
             b = bs['results'][i]
 
-            if b['type'] == 'numbered_list_item' or b['type'] == 'bulleted_list_item':
+            if b['type'] == 'numbered_list_item' or b[
+                    'type'] == 'bulleted_list_item':
 
                 plain_text = str('')
                 for t in b[b['type']]['text']:
@@ -796,10 +814,8 @@ class MonthReport(Report):
                             client, b, 'ol', level)
                     children += """<li>{item}{children}</li>""".format(
                         **{
-                            'item':
-                            plain_text,
-                            'children':
-                            new_children
+                            'item': plain_text,
+                            'children': new_children
                         })
                 else:
                     children += """<li>{item}</li>""".format(
@@ -820,7 +836,8 @@ class MonthReport(Report):
             last = """<li>{item}{children}</li>""".format(
                 **{
                     'item': plain_text,
-                    'children': self.block_list_children(client, block, tag, level)
+                    'children': self.block_list_children(
+                        client, block, tag, level)
                 })
         else:
             last = """<li>{item}</li>""".format(**{'item': plain_text})
@@ -835,8 +852,8 @@ class MonthReport(Report):
             return "data:image{};base64,".format(imgtype) + imgbase64.decode(
                 "utf-8")
         except Exception as e:
-            clslog.critical(
-                "Exception @{}: {}".format(e.__traceback__.tb_lineno, e))
+            clslog.critical("Exception @{}: {}".format(
+                e.__traceback__.tb_lineno, e))
             return None
 
     def render_block_items(self, client, page):
@@ -1153,7 +1170,8 @@ class MonthReport(Report):
             for t in title:
                 # Use BT-Panel timer task to trigger
                 if not force:
-                    if self.datetime_now.day != 1:
+                    if not (self.datetime_now.day >= 1
+                            and self.datetime_now.day <= 6):
                         clslog.warning(
                             "Month report will not trigger except the day 1")
                         break
@@ -1199,8 +1217,8 @@ class MonthReport(Report):
                                 "Week {} report N/A".format(weekdatestr))
                             break
         except Exception as e:
-            clslog.critical(
-                "Exception @{}: {}".format(e.__traceback__.tb_lineno, e))
+            clslog.critical("Exception @{}: {}".format(
+                e.__traceback__.tb_lineno, e))
             traceback.print_exc(e)
 
     def render_html(self, title):
@@ -1428,7 +1446,7 @@ def cli_month(client, clsconfig, remove, force, send):
     allow_extra_args=True,
     ignore_unknown_options=True,
 ),
-    help="Notion Report Generator.")
+               help="Notion Report Generator.")
 def notion(rtype, config, excel, remove, force, send):
 
     clsconfig = ClslqConfigUnique(file=config)

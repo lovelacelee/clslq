@@ -18,7 +18,7 @@ def match(list, s):
 def rmdir(path):
     removelist = [
         'build', '.pytest_cache', '__pycache__', 'clslq.egg-info', '.eggs',
-        'dist'
+        'dist', '_build', '_api', '_static', '_templates'
     ]
     for root, dirs, files in os.walk(path):
         for d in dirs:
@@ -44,7 +44,7 @@ def rmdir(path):
 
 
 class CleanCommand(Command):
-    description = "distclean"
+    description = "[*]distclean project root directory"
     user_options = []
 
     # This method must be implemented
@@ -62,7 +62,7 @@ class CleanCommand(Command):
 
 
 class DocRunCommand(Command):
-    description = "doc run"
+    description = "[*]Use sphinx-autobuild host fot document test."
     user_options = []
 
     def initialize_options(self):
@@ -70,99 +70,14 @@ class DocRunCommand(Command):
 
     def finalize_options(self):
         pass
-
+        
     def run(self):
         os.system(
-            "sphinx-apidoc --maxdepth 5 --separate --force -o source {} setup.py clslq.py"
-            .format(os.getcwd()))
-        os.system(
-            "sphinx-autobuild --host 0.0.0.0 --port 8000 source build/html")
-
-
-class DocBuildCommand(Command):
-    description = "doc run"
-    user_options = []
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        os.system(
-            "sphinx-apidoc --maxdepth 5 --separate --force -o source {} setup.py clslq.py"
-            .format(os.getcwd()))
-        os.system("sphinx-build -D html_theme=bizstyle -D language=zh_CN \
-            -D html_logo=logo.png \
-            -D html_favicon=favicon.ico \
-            -a -b html ./source ./build/zh_CN")
-        os.system("sphinx-build -D html_theme=bizstyle -D language=en \
-            -D html_logo=logo.png \
-            -D html_favicon=favicon.ico \
-            -a -b html ./source ./build/en")
-        shutil.copytree('source', 'docs')
-
-
-class DocCreateCommand(Command):
-    description = "doc create"
-    user_options = []
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def sphinx_html_sidebars(self):
-        with open(os.path.join('source', 'conf.py'), 'a+') as f:
-            f.writelines([
-                '\r\n', 'html_sidebars = {\n',
-                "'**': ['globaltoc.html', 'sourcelink.html', 'searchbox.html'],\n",
-                "'using/windows': ['windowssidebar.html', 'searchbox.html'],\n",
-                "}\n", "html_theme = 'sphinx_rtd_theme'\n"
-            ])
-
-    def run(self):
-        shutil.rmtree("source", ignore_errors=True)
-        shutil.rmtree(os.path.join("build", 'en'), ignore_errors=True)
-        shutil.rmtree(os.path.join("build", 'zh_CN'), ignore_errors=True)
-        """sphinx-quickstart create doc tree
-
-        import os
-        import sys
-        sys.path.insert(0, os.path.abspath('./../'))
-        html_theme = 'classic'
-        extensions:sphinx.ext.napoleon
-        More info @https://www.sphinx-doc.org/en/master/contents.html
-        third-party theme https://sphinx-themes.org/
-        official theme only clask and bizstyle are recommended
-
-        """
-        os.system(
-            "sphinx-quickstart --sep {} -p CLSLQ -a Connard.Lee -v {} -r {} -l en \
-            --ext-autodoc --ext-intersphinx --ext-doctest --ext-imgmath --ext-todo \
-            --extensions sphinx.ext.napoleon \
-            --extensions sphinx.ext.autosummary \
-            --extensions sphinx.ext.githubpages \
-            --extensions sphinx.ext.graphviz\
-            --no-makefile --no-batchfile --no-use-make-mod --ext-coverage ".
-            format(os.getcwd(), version, version))
-
-        self.sphinx_html_sidebars()
-        with open(os.path.join('source', 'conf.py'), 'a+') as f:
-            f.writelines([
-                '\r\n', 'import os\n', 'import sys\n',
-                "sys.path.insert(0, os.path.abspath('./../'))\n"
-            ])
-
-        shutil.copyfile('logo.png', os.path.join('source', 'logo.png'))
-        shutil.copyfile('favicon.ico', os.path.join('source', 'favicon.ico'))
-
+            "sphinx-autobuild --host 0.0.0.0 --port 8000 --re-ignore .rst docs build/html")
 
 class PublishCommand(Command):
 
-    description = "Publish a new version to pypi"
+    description = "[*]Publish a new version to pypi, you may use -r to publish to https://pypi.org"
 
     user_options = [
         # The format is (long option, short option, description).
@@ -312,7 +227,5 @@ setup(
     cmdclass={
         "distclean": CleanCommand,
         "publish": PublishCommand,
-        "docbuild": DocBuildCommand,
         "docrun": DocRunCommand,
-        "doccreate": DocCreateCommand,
     })

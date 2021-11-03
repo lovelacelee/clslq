@@ -10,7 +10,9 @@ build
 pytest/*.db
 Pipfile.lock
 .vscode
-source
+_api
+_static
+_templates
 docs/api
 docs/_build
 .clslq.json

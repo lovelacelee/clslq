@@ -11,6 +11,7 @@ from click.termui import prompt
 from clslq.cli_clslq_pip import pip
 from clslq.cli_clslq_venv import venv
 from clslq.cli_clslq_notion import notion
+from clslq.cli_clslq_upgrade import upgrade
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
@@ -32,6 +33,7 @@ def main():
 main.add_command(pip, name='pip')
 main.add_command(venv, name='venv')
 main.add_command(notion, name='notion')
+main.add_command(upgrade, name='upgrade')
 
 if __name__ == '__main__':
     main()

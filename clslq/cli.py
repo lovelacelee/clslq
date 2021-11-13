@@ -12,6 +12,8 @@ from clslq.cli_clslq_pip import pip
 from clslq.cli_clslq_venv import venv
 from clslq.cli_clslq_notion import notion
 from clslq.cli_clslq_upgrade import upgrade
+from clslq.cli_notion_backup import notion_backup
+from clslq.cli_git import git
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
@@ -34,6 +36,8 @@ main.add_command(pip, name='pip')
 main.add_command(venv, name='venv')
 main.add_command(notion, name='notion')
 main.add_command(upgrade, name='upgrade')
+main.add_command(notion_backup, name='notion_backup')
+main.add_command(git, name='git')
 
 if __name__ == '__main__':
     main()

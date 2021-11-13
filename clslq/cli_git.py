@@ -36,21 +36,21 @@ def git(command, repo, branch, msg, tagv):
     click.secho("Pull from git repository, default is origin master",
                 fg='green')
     os.system("git pull {} {}".format(repo, branch))
-    if 'push' in command:
+    if 'push' == command:
         click.secho("Commit with message: {}".format(msg), fg='green')
         os.system("git commit -a -m \"{}\"".format(msg))
         os.system("git push")
-    if 'pushall' in command:
+    if 'pushall' == command:
         click.secho("Add * and commit with message: {}".format(msg), fg='green')
         os.system("git add *")
         os.system("git commit -a -m \"{}\"".format(msg))
         os.system("git push")
 
-    if 'pushtag' in command:
+    if 'pushtag' == command:
         click.secho("Add tag and commit with message: {}".format(msg), fg='green')
         os.system("git add .")
-        os.system("git commit -m 'publish on version %s'" % tagv)
-        os.system("git tag -a v{} -m 'add tag on {}'".format(tagv, tagv))
+        os.system("git commit -a -m \"publish on version %s\"" % tagv)
+        os.system("git tag -a v{} -m \"add tag on {}\"".format(tagv, tagv))
         os.system("git push")
         os.system("git push origin --tags")
 

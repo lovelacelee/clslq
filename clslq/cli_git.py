@@ -25,7 +25,7 @@ _help = """
               default="master",
               help='branch, default is master')
 @click.option('--msg', '-m', default=":heart:update", help='commit message')
-@click.option('--tagv', default="v1.0", help='tag version')
+@click.option('--tagv', '-v', default="1.0.0", help='tag version')
 @click.command(context_settings=dict(
     allow_extra_args=True,
     ignore_unknown_options=True,

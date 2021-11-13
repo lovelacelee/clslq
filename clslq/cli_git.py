@@ -42,7 +42,9 @@ def git(command, repo, branch, msg):
     if 'push' in command:
         click.secho("Commit with message: {}".format(msg), fg='green')
         os.system("git commit -a -m \"{}\"".format(msg))
+        os.system("git push")
     if 'pushall' in command:
         click.secho("Add * and commit with message: {}".format(msg), fg='green')
         os.system("git add *")
         os.system("git commit -a -m \"{}\"".format(msg))
+        os.system("git push")

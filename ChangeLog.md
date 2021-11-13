@@ -1,6 +1,9 @@
 CHANGES
 =======
 
+* **202111**
+    * 1.2.9 Add some personal-use command tools. `clslq git ` and `clslq upgrade` supported.
+
 * **202110**
     * 1.2.6 Bugs fixed.
     * 1.2.5 Images transfered to base64 format rather than url refered when Email render.

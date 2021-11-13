@@ -54,3 +54,14 @@ def git(command, repo, branch, msg, tagv):
         os.system("git push")
         os.system("git push origin --tags")
 
+    if command == 'emoji':
+        click.secho("{} {}".format(':tada:', "first commit"), fg='green')
+        click.secho("{} {}".format(':new:', "new function"), fg='green')
+        click.secho("{} {}".format(':bookmark:', "add tags"), fg='green')
+        click.secho("{} {}".format(':bug:', "bug fixed"), fg='green')
+        click.secho("{} {}".format(':ambulance:', "essential bug fixed"), fg='green')
+        click.secho("{} {}".format(':wrench:', "configure file fixed"), fg='green')
+        click.secho("{} {}".format(':rocket:', "function of deplay"), fg='green')
+        click.secho("{} {}".format(':memo:', "document updated"), fg='green')
+        click.secho("{} {}".format(':fire:', "huge modification"), fg='green')
+        click.secho("{} {}".format(':heart:', "green_heart building relations"), fg='green')

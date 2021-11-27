@@ -31,29 +31,42 @@ class MonthReport(Report):
         else:
             return False
 
-    def init(self, title, user, department, force):
-
-        nowdate = self.datetime_now
+    def _gen_lastmonth(self, nowdate):
         if nowdate.month == 1:
-            lastmonth = 12
+            self.report_month = 12
         else:
-            lastmonth = nowdate.month - 1
+            self.report_month = nowdate.month - 1
+        clslog.info("report_month: {}".format(self.report_month))
         self._mdaystart = nowdate - \
             datetime.timedelta(
-                days=(nowdate.day + calendar.mdays[lastmonth]))
-        if force:
-            self._mdayend = nowdate
-        else:
-            self._mdayend = nowdate - datetime.timedelta(days=nowdate.day)
-
-        clslog.critical("==月报检索{}==>{}周报及读书学习笔记==".format(
+                days=(nowdate.day + calendar.mdays[self.report_month]))
+        self._mdayend = nowdate - datetime.timedelta(days=nowdate.day)
+        clslog.critical("==月报[LastMonth]检索{}==>{}周报及读书学习笔记==".format(
             self._mdaystart.strftime("%Y%m%d"),
             self._mdayend.strftime("%Y%m%d")))
 
-        # 当月发上月报告
-        mtitle = "{}({}{:02})".format(title, nowdate.year, lastmonth)
-        click.secho("{}".format(mtitle), fg='blue')
+    def _gen_thismonth(self, nowdate):
+        self.report_month = nowdate.month
+        self._mdaystart = nowdate - datetime.timedelta(days=(nowdate.day))
+        self._mdayend = nowdate
+        clslog.critical("==月报[ThisMonth]检索{}==>{}周报及读书学习笔记==".format(
+            self._mdaystart.strftime("%Y%m%d"),
+            self._mdayend.strftime("%Y%m%d")))
 
+    def init(self, title, user, department, force):
+
+        nowdate = self.datetime_now
+        if force:
+            if nowdate.day > 6:
+                self._gen_thismonth(nowdate)
+            else:
+                self._gen_lastmonth(nowdate)
+        else:
+            self._gen_lastmonth(nowdate)
+
+
+        mtitle = "{}({}{:02})".format(title, nowdate.year, self.report_month)
+        click.secho("{}".format(mtitle), fg='blue')
         self._title = mtitle
 
         self._book = str('')
@@ -505,6 +518,14 @@ class MonthReport(Report):
                 or b['type'] == 'code' \
                     or b['type'] == 'bookmark':
                 page_html_tags += self.block_common_types(client, b)
+            elif  b['type'] == 'link_to_page':
+                bs = client.blocks.retrieve(b['id'])
+                
+                # Into link page
+                page = client.pages.retrieve(page_id=bs['link_to_page']['page_id'])
+                title = page['properties']['title']['title'][0]['plain_text']
+   
+                page_html_tags += p_template.format(**{'p': title.strip()})
             else:
                 clslog.warning("Type:{}".format(b['type']))
                 bs = client.blocks.retrieve(b['id'])
@@ -512,7 +533,7 @@ class MonthReport(Report):
                     "{} Not supported by current Notion API, more info please visit {}"
                     .format(
                         bs,
-                        "https://developers.notion.com/docs/working-with-page-content#modeling-content-as-blocks"
+                        "https://developers.notion.com/docs"
                     ))
 
             last_type = b['type']

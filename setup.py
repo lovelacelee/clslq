@@ -156,6 +156,7 @@ setup(
         'sqlalchemy',
         'notion-client',
         'openpyxl',
+        'requests',
         'pandas'
     ],
     platforms=["all"],

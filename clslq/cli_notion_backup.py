@@ -10,12 +10,12 @@ Usage: clslq notion_backup [OPTIONS]
 
 import click
 
-from .clslq_config import ClslqConfigUnique
-from .clslq_log import ClslqLogger
+from clspy.config import ConfigUnique
+from clspy.log import Logger
 from notion_client import Client
 from .clslq_notion_export import exporter
 
-clslog = ClslqLogger().log
+clslog = Logger().log
 
 
 @click.option('--config',
@@ -30,7 +30,7 @@ clslog = ClslqLogger().log
                help="Notion backup tool, use secert in clslq config.")
 def notion_backup(config):
 
-    clsconfig = ClslqConfigUnique(file=config)
+    clsconfig = ConfigUnique(file=config)
     if clsconfig.get('secrets_from') is None:
         click.secho("Make sure notion secret code is valid in .clslq.json",
                     fg='red')

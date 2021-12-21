@@ -11,11 +11,11 @@ from openpyxl import Workbook
 from openpyxl.styles import Border
 from openpyxl.styles import Side
 
-from .clslq_log import ClslqLogger
+from clspy.log import Logger
 
 from .templates import weekreport
 
-clslog = ClslqLogger().log
+clslog = Logger().log
 
 
 class Report(object):

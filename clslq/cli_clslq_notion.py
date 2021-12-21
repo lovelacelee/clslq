@@ -1,12 +1,4 @@
 # -*- encoding: utf-8 -*-
-'''cli_clslq_notion
-
-Notion client in python, notion-py is required
-
-Usage: clslq notion [OPTIONS]
-
-
-'''
 
 import click
 import datetime
@@ -14,11 +6,11 @@ import re
 import traceback
 import pandas
 
-from .clslq_config import ClslqConfigUnique
-from .clslq_log import ClslqLogger
+from clspy import ConfigUnique
+from clspy import Logger
 from notion_client import Client
 
-clslog = ClslqLogger().log
+clslog = Logger().log
 
 from .clslq_notion_wreport import WeekReport
 from .clslq_notion_mreport import MonthReport
@@ -208,7 +200,7 @@ def cli_month(client, clsconfig, remove, force, send):
                help="Notion Report Generator.")
 def notion(rtype, config, excel, remove, force, send):
 
-    clsconfig = ClslqConfigUnique(file=config)
+    clsconfig = ConfigUnique(file=config)
     if clsconfig.get('secrets_from') is None:
         click.secho("Make sure notion secret code is valid in .clslq.json",
                     fg='red')

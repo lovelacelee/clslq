@@ -1,27 +1,11 @@
 # -*- encoding: utf-8 -*-
-'''cli_clslq_venv
-
-Help to create python virtual environment, pipenv and click module used.
-
-Usage: clslq venv [OPTIONS]
-
-  Python venv manager of CLSLQ implement.
-
-Options:
-  -p, --pipconf PATH  Install pip.conf to local system, default use pip.conf.
-  -d, --delete        Delete python virtual environment, venv will be created.
-  -c, --create        Create python virtual environment, venv will be created.
-  -h, --help          Show this message and exit.
-
-'''
-
 
 import click
 import platform
 import os
-from .clslq_utils import pip_conf_install
-from .clslq_utils import pipguess
-from .clslq_utils import setenv
+from clspy.utils import pip_conf_install
+from clspy.utils import pipguess
+from clspy.utils import setenv
 
 
 @click.option('--create',

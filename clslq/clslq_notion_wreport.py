@@ -8,12 +8,12 @@ from openpyxl.styles import colors
 from openpyxl.styles import Alignment
 from openpyxl.styles import PatternFill
 
-from .clslq_log import ClslqLogger
+from clspy.log import Logger
 
 from .templates import weekreport
 from .clslq_notion_report import Report
 
-clslog = ClslqLogger().log
+clslog = Logger().log
 
 
 class WeekReport(Report):

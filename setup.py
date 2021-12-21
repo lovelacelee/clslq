@@ -152,6 +152,7 @@ setup(
     install_requires=[
         'loguru',
         'Click',
+        'clspy',
         'pipenv',
         'sqlalchemy',
         'notion-client',
@@ -162,7 +163,7 @@ setup(
     platforms=["all"],
     keywords=['clslq', 'clslqutils'],
     # setup.py needs
-    setup_requires=['setuptools', 'Click', 'twine', 'sphinx', 'sqlalchemy'],
+    setup_requires=['setuptools', 'Click', 'twine', 'sphinx', 'sqlalchemy', 'clspy'],
     requires=['loguru'],
     # python3 setup.py test
     tests_require=[

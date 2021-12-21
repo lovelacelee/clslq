@@ -1,9 +1,9 @@
 import traceback
-from .clslq_log import ClslqLogger
+from clspy.log import Logger
 from notion_client import Client
 from .notion.databases import database
 
-clslog = ClslqLogger().log
+clslog = Logger().log
 
 
 def exporter(client, clsconfig):

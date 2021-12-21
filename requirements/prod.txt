@@ -1,3 +1,4 @@
+clspy
 psutil
 loguru
 pipenv

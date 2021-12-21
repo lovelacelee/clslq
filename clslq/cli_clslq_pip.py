@@ -20,7 +20,7 @@ import click
 import platform
 import os
 
-from .clslq_utils import pipguess
+from clspy.utils import pipguess
 
 
 @click.option(

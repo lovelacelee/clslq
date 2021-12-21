@@ -8,12 +8,12 @@ import re
 import traceback
 import calendar
 from io import BytesIO
-from .clslq_log import ClslqLogger
+from clspy.log import Logger
 
 from .templates import monthreport
 from .clslq_notion_report import Report
 
-clslog = ClslqLogger().log
+clslog = Logger().log
 
 
 class MonthReport(Report):

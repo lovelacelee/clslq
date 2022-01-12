@@ -1,4 +1,4 @@
 # -*- encoding: utf-8 -*-
 
-CLSLQ_Version = '1.3.1'
+CLSLQ_Version = '1.3.2'
 __doc__ = CLSLQ_Version

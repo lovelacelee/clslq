@@ -55,20 +55,22 @@ def git(command, repo, branch, msg, tagv):
     click.secho("Pull from git repository, default is origin master",
                 fg='green')
     os.system("git pull {} {}".format(repo, branch))
-    if 'push' == command:
+    if 'push' in command:
         for k,v in cm.items():
             click.secho("{:<10} {}".format(k, v), fg='green')
         input = click.prompt('Select commit message', default=cm['new'])
         msg = cm[input]
+
+    if 'push' == command:
         click.secho("Commit with message: {}".format(msg), fg='green')
         os.system("git commit -a -m \"{}\"".format(msg))
-        #os.system("git push")
+        os.system("git push")
         exit()
     if 'pushall' == command:
         click.secho("Add * and commit with message: {}".format(msg), fg='green')
         os.system("git add *")
         os.system("git commit -a -m \"{}\"".format(msg))
-        #os.system("git push")
+        os.system("git push")
         exit()
 
     if 'pushtag' == command:

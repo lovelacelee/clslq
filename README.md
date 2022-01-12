@@ -17,7 +17,6 @@ This project bootstrapped since 2021, the playground in python, first python lib
 # [ChangeLog](ChangeLog.md)
 
 * Only support `python3`
-* Posted private [pypi server](https://pypi.lovelacelee.com/)
 
 # TODO
 

@@ -7,9 +7,9 @@ Usage: clslq pip [OPTIONS]
 
 Options:
   -t, --trusted-host TEXT  The trusted mirror host, default:
-                           gw.lovelacelee.com.
+                           tuna mirror.
   -i, --pypi TEXT          The pypi mirror url, default use:
-                           https://pypi.lovelacelee.com/
+                           https://pypi.org/
   -h, --help               Show this message and exit.
 
 '''
@@ -26,8 +26,8 @@ from clspy.utils import pipguess
 @click.option(
     '--pypi',
     '-i',
-    default='https://pypi.lovelacelee.com/',
-    help='The pypi mirror url, default use: https://pypi.lovelacelee.com/')
+    default='https://pypi.org/',
+    help='The pypi mirror url, default use: https://pypi.org/')
 @click.option('--trusted-host',
               '-t',
               default='gw.lovelacelee.com',

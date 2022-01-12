@@ -6,6 +6,7 @@ import os
 from clspy.utils import pip_conf_install
 from clspy.utils import pipguess
 from clspy.utils import setenv
+from clspy.utils import rmdir
 
 
 @click.option('--create',
@@ -28,19 +29,24 @@ from clspy.utils import setenv
 ),
     help="Python venv manager of CLSLQ implement.")
 def venv(create, delete, pipconf):
-    setenv(key='PIPENV_TEST_INDEX',
-           value='https://pypi.tuna.tsinghua.edu.cn/simple')
-    setenv(key='WORKON_HOME', value='venv')
+    """
+
+    Install pip.conf by default
+    """
     if pipconf:
         pip_conf_install(pipconf)
     if create:
         click.secho("Create new environment:{}.".format(create), fg='green')
-        os.system("pipenv install --three --skip-lock")
+        
+        if platform.system() == "Windows":
+            os.system("python -m venv venv ")
+        else:
+            os.system("python3 -m venv venv ")
         exit()
     if delete:
         click.secho("Delete {}".format(os.path.join(os.getcwd(), 'venv')),
                     fg='green')
-        os.system('pipenv --rm')
+        rmdir("venv")
         exit()
-
-    os.system("pipenv shell")
+        
+    os.system("venv\\Scripts\\activate.bat")

@@ -84,7 +84,6 @@ class PublishCommand(Command):
         # python setup.py publish --help
         # python setup.py publish -r/-l
         ("release", 'r', "Publish to pypi.org"),
-        ("lovelacelee", 'l', "Publish to pypi.lovelacelee.com"),
     ]
 
     def initialize_options(self):
@@ -97,9 +96,6 @@ class PublishCommand(Command):
 
         if self.release:
             print("V%s will publish to the https://upload.pypi.org/legacy/" %
-                  version)
-        if self.lovelacelee:
-            print("V%s will publish to the https://pypi.lovelacelee.com/" %
                   version)
 
     def run(self):
@@ -116,15 +112,6 @@ class PublishCommand(Command):
         except Exception as e:
             print(e)
 
-        try:
-            if self.lovelacelee:
-                # use .pypirc
-                #os.system("twine upload -r lovelacelee dist/*")
-                os.system(
-                    "twine upload --verbose --username lovelacelee --repository-url https://pypi.lovelacelee.com/ dist/*"
-                )
-        except Exception as e:
-            print(e)
 
         print("Here is git command tips:")
         print("$ git add .")
@@ -150,10 +137,10 @@ setup(
     # Project home
     url="http://git.lovelacelee.com",
     install_requires=[
+        'clspy',
         'loguru',
         'Click',
         'clspy',
-        'pipenv',
         'sqlalchemy',
         'notion-client',
         'openpyxl',
@@ -176,7 +163,7 @@ setup(
     # setup_requires or tests_require packages
     # will be written into metadata of *.egg
     dependency_links=[
-        #"https://pypi.lovelacelee.com/clslq-1.1.0.tar.gz",
+        #"clslq-1.1.0.tar.gz",
     ],
     classifiers=[
         #   3 - Alpha

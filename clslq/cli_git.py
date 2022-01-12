@@ -15,6 +15,19 @@ _help = """
     
 """
 
+cm = {
+    "first": ":tada:first commit",
+    "new": ":new:new function",
+    "tag": ":bookmark:add tags",
+    "bug": ":bug:bug fixed",
+    "ess": ":ambulance:essential bug fixed",
+    "cfg": ":wrench:configure file fixed",
+    "rock": ":rocket:function of deplay",
+    "memo": ":memo:document updated",
+    "fire": ":fire:huge modification",
+    "heart": ":heart:green_heart building relations",
+}
+
 
 @click.option('--repo',
               '-r',
@@ -24,7 +37,7 @@ _help = """
               '-b',
               default="master",
               help='branch, default is master')
-@click.option('--msg', '-m', default=":heart:update", help='commit message')
+@click.option('--msg', '-m', default=cm['new'], help='commit message')
 @click.option('--tagv', '-v', default="1.0.0", help='tag version')
 @click.command(context_settings=dict(
     allow_extra_args=True,
@@ -33,18 +46,30 @@ _help = """
                help=_help)
 @click.argument('command', required=False)
 def git(command, repo, branch, msg, tagv):
+    click.secho("{:<10} {}".format('command:', command), fg='green')
+    click.secho("{:<10} {}".format('repo:', repo), fg='green')
+    click.secho("{:<10} {}".format('branch:', branch), fg='green')
+    click.secho("{:<10} {}".format('msg:', msg), fg='green')
+    click.secho("{:<10} {}".format('tagv:', tagv), fg='green')
+
     click.secho("Pull from git repository, default is origin master",
                 fg='green')
     os.system("git pull {} {}".format(repo, branch))
     if 'push' == command:
+        for k,v in cm.items():
+            click.secho("{:<10} {}".format(k, v), fg='green')
+        input = click.prompt('Select commit message', default=cm['new'])
+        msg = cm[input]
         click.secho("Commit with message: {}".format(msg), fg='green')
         os.system("git commit -a -m \"{}\"".format(msg))
-        os.system("git push")
+        #os.system("git push")
+        exit()
     if 'pushall' == command:
         click.secho("Add * and commit with message: {}".format(msg), fg='green')
         os.system("git add *")
         os.system("git commit -a -m \"{}\"".format(msg))
-        os.system("git push")
+        #os.system("git push")
+        exit()
 
     if 'pushtag' == command:
         click.secho("Add tag and commit with message: {}".format(msg), fg='green')
@@ -53,15 +78,8 @@ def git(command, repo, branch, msg, tagv):
         os.system("git tag -a v{} -m \"add tag on {}\"".format(tagv, tagv))
         os.system("git push")
         os.system("git push origin --tags")
+        exit()
 
-    if command == 'emoji':
-        click.secho("{} {}".format(':tada:', "first commit"), fg='green')
-        click.secho("{} {}".format(':new:', "new function"), fg='green')
-        click.secho("{} {}".format(':bookmark:', "add tags"), fg='green')
-        click.secho("{} {}".format(':bug:', "bug fixed"), fg='green')
-        click.secho("{} {}".format(':ambulance:', "essential bug fixed"), fg='green')
-        click.secho("{} {}".format(':wrench:', "configure file fixed"), fg='green')
-        click.secho("{} {}".format(':rocket:', "function of deplay"), fg='green')
-        click.secho("{} {}".format(':memo:', "document updated"), fg='green')
-        click.secho("{} {}".format(':fire:', "huge modification"), fg='green')
-        click.secho("{} {}".format(':heart:', "green_heart building relations"), fg='green')
+
+
+    click.secho("Unsupport command: {}".format(command), fg='red')

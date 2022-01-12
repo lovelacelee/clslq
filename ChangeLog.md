@@ -13,7 +13,6 @@ CHANGES
 * **202109**
     * 1.2.1 Bug fix on v1.2.0
     * 1.2.0 Notion export based on notion-py which is not officially supported by Notion.
-    * 1.1.8 Post new release to https://pypi.lovelacelee.com 
     * 1.1.7 Tested local pypi server upload 
 * **202108** Initial commit
     * 1.1.6 Sphinx doc system intergated, command lauch by setup.py 

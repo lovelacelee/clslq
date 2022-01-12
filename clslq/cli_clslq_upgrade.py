@@ -7,8 +7,8 @@ from clspy.utils import pipguess
 
 @click.option('--pypi',
               '-p',
-              default='https://pypi.lovelacelee.com/simple',
-              help='Use pypi source, default: https://pypi.lovelacelee.com/simple')
+              default='https://pypi.org/simple',
+              help='Use pypi source, default: https://pypi.org/simple')
 @click.command(context_settings=dict(
     allow_extra_args=True,
     ignore_unknown_options=True,

@@ -46,16 +46,16 @@ cm = {
                help=_help)
 @click.argument('command', required=False)
 def git(command, repo, branch, msg, tagv):
-    click.secho("{:<10} {}".format('command:', command), fg='green')
-    click.secho("{:<10} {}".format('repo:', repo), fg='green')
-    click.secho("{:<10} {}".format('branch:', branch), fg='green')
-    click.secho("{:<10} {}".format('msg:', msg), fg='green')
-    click.secho("{:<10} {}".format('tagv:', tagv), fg='green')
+    click.secho("{:<10} : {}".format('[command]', command), fg='green')
+    click.secho("{:<10} : {}".format('[repo]', repo), fg='green')
+    click.secho("{:<10} : {}".format('[branch]', branch), fg='green')
+    click.secho("{:<10} : {}".format('[msg]', msg), fg='green')
+    click.secho("{:<10} : {}".format('[tagv]', tagv), fg='green')
 
     click.secho("Pull from git repository, default is origin master",
                 fg='green')
     os.system("git pull {} {}".format(repo, branch))
-    if 'push' in command:
+    if command and 'push' in command:
         for k,v in cm.items():
             click.secho("{:<10} {}".format(k, v), fg='green')
         input = click.prompt('Select commit message', default=cm['new'])
@@ -83,5 +83,5 @@ def git(command, repo, branch, msg, tagv):
         exit()
 
 
-
-    click.secho("Unsupport command: {}".format(command), fg='red')
+    if command:
+        click.secho("Unsupport command: {}".format(command), fg='red')

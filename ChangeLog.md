@@ -1,6 +1,9 @@
 CHANGES
 =======
 
+* **202201**
+    * 1.3.3 Bug fixed.
+    
 * **202111**
     * 1.2.9 Add some personal-use command tools. `clslq git ` and `clslq upgrade` supported.
 

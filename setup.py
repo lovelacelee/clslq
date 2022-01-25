@@ -17,8 +17,8 @@ def match(list, s):
 
 def rmdir(path):
     removelist = [
-        'build', '.pytest_cache', '__pycache__', 'clslq.egg-info', '.eggs',
-        'dist', '_build', '_api', '_static', '_templates'
+        '.pytest_cache', 'clslq.egg-info', '.eggs',
+        'dist', 
     ]
     for root, dirs, files in os.walk(path):
         for d in dirs:

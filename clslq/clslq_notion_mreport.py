@@ -17,6 +17,7 @@ clslog = Logger().log
 
 
 class MonthReport(Report):
+
     def belongs(self, date):
         if date > self._mdaystart and date <= self._mdayend:
             return True
@@ -63,7 +64,6 @@ class MonthReport(Report):
                 self._gen_lastmonth(nowdate)
         else:
             self._gen_lastmonth(nowdate)
-
 
         mtitle = "{}({}{:02})".format(title, nowdate.year, self.report_month)
         click.secho("{}".format(mtitle), fg='blue')
@@ -341,11 +341,14 @@ class MonthReport(Report):
                     **{'code': text.strip()})
             elif b['type'] == 'bookmark':
                 text = str('')
+                bookmark = b[b['type']]['url']
                 for t in b[b['type']]['caption']:
                     text += t['plain_text']
+                if text == str(''):
+                    text = bookmark
                 children += """<a href="{bookmark}" target="_blank">{caption}</a><br/>""".format(
                     **{
-                        'bookmark': b[b['type']]['url'],
+                        'bookmark': bookmark,
                         'caption': text.strip()
                     })
             elif b['type'] == 'child_database':
@@ -461,6 +464,9 @@ class MonthReport(Report):
         p_template = """
             <p style="text-indent: 2em;">{p}</p>
         """
+        a_template = """
+            <a style="text-indent: 2em;" href="{link}" target="_blank">{title}</a>
+        """
         img_template = """
             <div style="width:auto;border: 1px dashed #ccc;display: table-cell;
                 vertical-align: middle;text-align: center; 
@@ -518,23 +524,27 @@ class MonthReport(Report):
                 or b['type'] == 'code' \
                     or b['type'] == 'bookmark':
                 page_html_tags += self.block_common_types(client, b)
-            elif  b['type'] == 'link_to_page':
+            elif b['type'] == 'link_to_page':
                 bs = client.blocks.retrieve(b['id'])
-                
+
                 # Into link page
-                page = client.pages.retrieve(page_id=bs['link_to_page']['page_id'])
+                page = client.pages.retrieve(
+                    page_id=bs['link_to_page']['page_id'])
                 title = page['properties']['title']['title'][0]['plain_text']
-   
+
+                page_html_tags += p_template.format(**{'p': title.strip()})
+            elif b['type'] == 'link_preview':
+                link = b['link_preview']['url']
+                page_html_tags += a_template.format(**{'link': link, 'title': link})
+            elif b['type'] == 'child_page':
+                title = b['child_page']['title']
                 page_html_tags += p_template.format(**{'p': title.strip()})
             else:
                 clslog.warning("Type:{}".format(b['type']))
                 bs = client.blocks.retrieve(b['id'])
                 clslog.info(
                     "{} Not supported by current Notion API, more info please visit {}"
-                    .format(
-                        bs,
-                        "https://developers.notion.com/docs"
-                    ))
+                    .format(bs, "https://developers.notion.com/docs"))
 
             last_type = b['type']
         return page_html_tags
@@ -575,14 +585,20 @@ class MonthReport(Report):
     def render_maintarget(self, database):
         for node in database['results']:
             item = node['properties']
-            self._main_target += """<li style="list-style-type: demical;">{p}</li>""".format(
-                **{'p': item[u'目标']['title'][0]['plain_text']})
+            try:
+                self._main_target += """<li style="list-style-type: demical;">{p}</li>""".format(
+                    **{'p': item[u'目标']['title'][0]['plain_text']})
+            except:
+                pass
 
     def render_teamtarget(self, database):
         for node in database['results']:
             item = node['properties']
-            self._team_target += """<li style="list-style-type: demical;">{p}</li>""".format(
-                **{'p': item[u'目标']['title'][0]['plain_text']})
+            try:
+                self._team_target += """<li style="list-style-type: demical;">{p}</li>""".format(
+                    **{'p': item[u'目标']['title'][0]['plain_text']})
+            except:
+                pass
 
     def render_technology(self, database):
         _template = """
@@ -783,8 +799,10 @@ class MonthReport(Report):
                         clslog.warning(
                             "Month report will not trigger except the day 1")
                         break
-
                 plain_text = t['plain_text'].strip().replace(' → ', '~')
+                if plain_text is "":
+                    break
+                clslog.info(t['plain_text'] + ":plain_text:" + plain_text)
                 """Reading list"""
                 if plain_text == u"读书如斯":
                     self.render_reading_books(client, database)
